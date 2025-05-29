@@ -1,0 +1,335 @@
+[
+    {
+      "id": 1,
+      "name": "Albania",
+      "code": "AL",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 12,
+      "flag": "albania.png"
+    },
+    {
+      "id": 2,
+      "name": "Armenia",
+      "code": "AM",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 8,
+      "flag": "armenia.png"
+    },
+    {
+      "id": 3,
+      "name": "Australia",
+      "code": "AU",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 15,
+      "flag": "australia.png"
+    },
+    {
+      "id": 4,
+      "name": "Austria",
+      "code": "AT",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 26,
+      "flag": "austria.png"
+    },
+    {
+      "id": 5,
+      "name": "Azerbaijan",
+      "code": "AZ",
+      "semiFinal": 1,
+      "final": false,
+      "runningOrder": 5,
+      "flag": "azerbaijan.png"
+    },
+    {
+      "id": 6,
+      "name": "Belgium",
+      "code": "BE",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 18,
+      "flag": "belgium.png"
+    },
+    {
+      "id": 7,
+      "name": "Croatia",
+      "code": "HR",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 10,
+      "flag": "croatia.png"
+    },
+    {
+      "id": 8,
+      "name": "Cyprus",
+      "code": "CY",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 22,
+      "flag": "cyprus.png"
+    },
+    {
+      "id": 9,
+      "name": "Czech Republic",
+      "code": "CZ",
+      "semiFinal": 1,
+      "final": false,
+      "runningOrder": 7,
+      "flag": "czech_republic.png"
+    },
+    {
+      "id": 10,
+      "name": "Denmark",
+      "code": "DK",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 19,
+      "flag": "denmark.png"
+    },
+    {
+      "id": 11,
+      "name": "Estonia",
+      "code": "EE",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 9,
+      "flag": "estonia.png"
+    },
+    {
+      "id": 12,
+      "name": "Finland",
+      "code": "FI",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 24,
+      "flag": "finland.png"
+    },
+    {
+      "id": 13,
+      "name": "France",
+      "code": "FR",
+      "semiFinal": null,
+      "final": true,
+      "runningOrder": 5,
+      "flag": "france.png"
+    },
+    {
+      "id": 14,
+      "name": "Georgia",
+      "code": "GE",
+      "semiFinal": 2,
+      "final": false,
+      "runningOrder": 13,
+      "flag": "georgia.png"
+    },
+    {
+      "id": 15,
+      "name": "Germany",
+      "code": "DE",
+      "semiFinal": null,
+      "final": true,
+      "runningOrder": 3,
+      "flag": "germany.png"
+    },
+    {
+      "id": 16,
+      "name": "Greece",
+      "code": "GR",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 21,
+      "flag": "greece.png"
+    },
+    {
+      "id": 17,
+      "name": "Iceland",
+      "code": "IS",
+      "semiFinal": 1,
+      "final": false,
+      "runningOrder": 6,
+      "flag": "iceland.png"
+    },
+    {
+      "id": 18,
+      "name": "Ireland",
+      "code": "IE",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 11,
+      "flag": "ireland.png"
+    },
+    {
+      "id": 19,
+      "name": "Israel",
+      "code": "IL",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 23,
+      "flag": "israel.png"
+    },
+    {
+      "id": 20,
+      "name": "Italy",
+      "code": "IT",
+      "semiFinal": null,
+      "final": true,
+      "runningOrder": 7,
+      "flag": "italy.png"
+    },
+    {
+      "id": 21,
+      "name": "Latvia",
+      "code": "LV",
+      "semiFinal": 1,
+      "final": false,
+      "runningOrder": 4,
+      "flag": "latvia.png"
+    },
+    {
+      "id": 22,
+      "name": "Lithuania",
+      "code": "LT",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 17,
+      "flag": "lithuania.png"
+    },
+    {
+      "id": 23,
+      "name": "Malta",
+      "code": "MT",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 14,
+      "flag": "malta.png"
+    },
+    {
+      "id": 24,
+      "name": "Moldova",
+      "code": "MD",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 20,
+      "flag": "moldova.png"
+    },
+    {
+      "id": 25,
+      "name": "Netherlands",
+      "code": "NL",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 16,
+      "flag": "netherlands.png"
+    },
+    {
+      "id": 26,
+      "name": "Norway",
+      "code": "NO",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 25,
+      "flag": "norway.png"
+    },
+    {
+      "id": 27,
+      "name": "Poland",
+      "code": "PL",
+      "semiFinal": 1,
+      "final": false,
+      "runningOrder": 3,
+      "flag": "poland.png"
+    },
+    {
+      "id": 28,
+      "name": "Portugal",
+      "code": "PT",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 14,
+      "flag": "portugal.png"
+    },
+    {
+      "id": 29,
+      "name": "Romania",
+      "code": "RO",
+      "semiFinal": 2,
+      "final": false,
+      "runningOrder": 11,
+      "flag": "romania.png"
+    },
+    {
+      "id": 30,
+      "name": "San Marino",
+      "code": "SM",
+      "semiFinal": 1,
+      "final": false,
+      "runningOrder": 2,
+      "flag": "san_marino.png"
+    },
+    {
+      "id": 31,
+      "name": "Serbia",
+      "code": "RS",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 13,
+      "flag": "serbia.png"
+    },
+    {
+      "id": 32,
+      "name": "Slovenia",
+      "code": "SI",
+      "semiFinal": 2,
+      "final": false,
+      "runningOrder": 9,
+      "flag": "slovenia.png"
+    },
+    {
+      "id": 33,
+      "name": "Spain",
+      "code": "ES",
+      "semiFinal": null,
+      "final": true,
+      "runningOrder": 4,
+      "flag": "spain.png"
+    },
+    {
+      "id": 34,
+      "name": "Sweden",
+      "code": "SE",
+      "semiFinal": 2,
+      "final": true,
+      "runningOrder": 27,
+      "flag": "sweden.png"
+    },
+    {
+      "id": 35,
+      "name": "Switzerland",
+      "code": "CH",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 17,
+      "flag": "switzerland.png"
+    },
+    {
+      "id": 36,
+      "name": "Ukraine",
+      "code": "UA",
+      "semiFinal": 1,
+      "final": true,
+      "runningOrder": 1,
+      "flag": "ukraine.png"
+    },
+    {
+      "id": 37,
+      "name": "United Kingdom",
+      "code": "GB",
+      "semiFinal": null,
+      "final": true,
+      "runningOrder": 2,
+      "flag": "united_kingdom.png"
+    }
+  ]
