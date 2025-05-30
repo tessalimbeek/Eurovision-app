@@ -1,16 +1,16 @@
 <script setup>
-import { ref, onMounted, onUnmounted} from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '../supabase'
 import { nextTick } from 'vue'
-import { unreadCount } from '../composables/chatState'
+import { unreadCount } from '../composables/useChatNotifications'
 
-const route = useRoute()
 const user = ref(null)
 const messages = ref([])
 const newMessage = ref('')
 const userMap = ref({})
-let subscription = null
+let chatSubscription = null // Separate subscription for chat updates
+
 const defaultAvatar = '/default-avatar.png'
 
 const inputRef = ref(null)
@@ -35,72 +35,97 @@ function scrollToBottom() {
   })
 }
 
-
-
 async function fetchInitialData() {
-  const { data: { user: authUser } } = await supabase.auth.getUser()
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser()
   if (!authUser) return
   user.value = authUser
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('group_id, name')
-    .eq('id', user.value.id)
-    .single()
+  // Use the get_user_group_id function instead of direct query
+  const { data: userGroupId, error: groupError } = await supabase.rpc('get_user_group_id', {
+    user_id: user.value.id,
+  })
 
-  if (!profile?.group_id) return
+  if (groupError || !userGroupId) {
+    console.error('Error fetching user group:', groupError)
+    return
+  }
 
   const { data: initialMessages } = await supabase
     .from('messages')
     .select('*')
-    .eq('group_id', profile.group_id)
+    .eq('group_id', userGroupId)
     .order('created_at')
 
   messages.value = initialMessages || []
   scrollToBottom()
 
-  const senderIds = [...new Set(messages.value.map(m => m.sender_id))]
+  const senderIds = [...new Set(messages.value.map((m) => m.sender_id))]
 
   const { data: users } = await supabase
     .from('users')
-    .select('id, name, avatar_url') // include avatar_url
+    .select('id, name, avatar_url')
     .in('id', senderIds)
 
-  userMap.value = Object.fromEntries(await Promise.all(users.map(async u => {
-    let avatar = null
+  userMap.value = Object.fromEntries(
+    await Promise.all(
+      users.map(async (u) => {
+        let avatar = null
 
-    if (u.avatar_url) {
-      const { data: signed, error } = await supabase
-        .storage
-        .from('avatars') // adjust if your bucket name is different
-        .createSignedUrl(u.avatar_url, 60 * 60)
+        if (u.avatar_url) {
+          const { data: signed, error } = await supabase.storage
+            .from('avatars')
+            .createSignedUrl(u.avatar_url, 60 * 60)
 
-      if (!error && signed?.signedUrl) {
-        avatar = signed.signedUrl
-      }
-    }
+          if (!error && signed?.signedUrl) {
+            avatar = signed.signedUrl
+          }
+        }
 
-    return [u.id, { name: u.name, avatar_url: avatar }]
-  })))
+        return [u.id, { name: u.name, avatar_url: avatar }]
+      }),
+    ),
+  )
 
-  subscription = supabase
-    .channel('group-chat')
+chatSubscription = supabase
+    .channel('chat-live-updates') // Different channel name
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
       table: 'messages'
-    }, payload => {
-      if (payload.new.group_id === profile.group_id) {
+    }, async payload => {
+      if (payload.new.group_id === userGroupId) {
         messages.value.push(payload.new)
-        if (route.path !== '/chat') {
-            unreadCount.value++
-            console.log(unreadCount)
-        } else if (payload.new.sender_id === user.value.id) {
-            // Only scroll if current user sent the message
-            nextTick(() => {
-                scrollToBottom()
-            })
+        
+        // Update userMap if we haven't seen this sender before
+        if (!userMap.value[payload.new.sender_id]) {
+          const { data: newUser } = await supabase
+            .from('users')
+            .select('id, name, avatar_url')
+            .eq('id', payload.new.sender_id)
+            .single()
+
+          if (newUser) {
+            let avatar = null
+            if (newUser.avatar_url) {
+              const { data: signed, error } = await supabase
+                .storage
+                .from('avatars')
+                .createSignedUrl(newUser.avatar_url, 60 * 60)
+
+              if (!error && signed?.signedUrl) {
+                avatar = signed.signedUrl
+              }
+            }
+            userMap.value[newUser.id] = { name: newUser.name, avatar_url: avatar }
+          }
         }
+        
+        // Always scroll to bottom for new messages when on chat page
+        nextTick(() => {
+          scrollToBottom()
+        })
       }
     })
     .subscribe()
@@ -120,95 +145,115 @@ async function sendMessage() {
   const content = newMessage.value.trim()
   newMessage.value = ''
 
-  await supabase.from('messages').insert([{ content }])
-//   scrollToBottom()
+  // Get user's group_id before sending message
+  const { data: userGroupId, error: groupError } = await supabase.rpc('get_user_group_id', {
+    user_id: user.value.id,
+  })
+
+  if (groupError || !userGroupId) {
+    console.error('Error fetching user group for message:', groupError)
+    return
+  }
+
+  // Insert message with explicit group_id and sender_id
+  const { error } = await supabase.from('messages').insert([
+    {
+      content,
+      group_id: userGroupId,
+      sender_id: user.value.id,
+    },
+  ])
+
+  if (error) {
+    console.error('Error sending message:', error)
+    // Restore the message content if there was an error
+    newMessage.value = content
+  }
 }
 
-
 onMounted(() => {
-    unreadCount.value = 0
-    fetchInitialData()
-    dismissKeyboardOnScroll()
+  unreadCount.value = 0
+  fetchInitialData()
+  dismissKeyboardOnScroll()
 })
 
 onUnmounted(() => {
-
-  if (subscription) {
-    supabase.removeChannel(subscription);
+  if (chatSubscription) {
+    supabase.removeChannel(chatSubscription)
   }
   const chatBoard = document.querySelector('.chat__conversation-board')
   if (chatBoard) {
     chatBoard.removeEventListener('scroll', dismissKeyboardOnScroll)
   }
-});
-
+})
 </script>
 
-
 <template>
-    <main class="chat-layout">
-      <div id="chat" class="--dark-theme">
-        <div class="chat__conversation-board" ref="chatBoard">
-  
+  <main class="chat-layout">
+    <div id="chat" class="--dark-theme">
+      <div class="chat__conversation-board" ref="chatBoard">
+        <div
+          v-for="(msg, index) in messages"
+          :key="msg.id"
+          :class="['chat__message-container', user?.id === msg.sender_id ? 'sent' : 'received']"
+        >
           <div
-            v-for="(msg, index) in messages"
-            :key="msg.id"
-            :class="['chat__message-container', user?.id === msg.sender_id ? 'sent' : 'received']"
+            class="chat__message-header"
+            v-if="index === 0 || messages[index - 1].sender_id !== msg.sender_id"
           >
-            <div class="chat__message-header" v-if="index === 0 || messages[index - 1].sender_id !== msg.sender_id">
-              <img
-                class="chat__avatar"
-                :src="getAvatarUrl(msg.sender_id)"
-                :alt="getUserName(msg.sender_id)"
-                loading="lazy"
-                width="32"
-                height="32"
-              />
-              <span class="chat__username">{{ getUserName(msg.sender_id) }}</span>
-            </div>
-  
-            <div class="chat__message-bubble">
-              {{ msg.content }}
-            </div>
+            <img
+              class="chat__avatar"
+              :src="getAvatarUrl(msg.sender_id)"
+              :alt="getUserName(msg.sender_id)"
+              loading="lazy"
+              width="32"
+              height="32"
+            />
+            <span class="chat__username">{{ getUserName(msg.sender_id) }}</span>
+          </div>
+
+          <div class="chat__message-bubble">
+            {{ msg.content }}
           </div>
         </div>
-  
-        <div class="chat__input-panel">
-          <input
-            ref="inputRef"
-            class="chat__input"
-            type="text"
-            placeholder="Type a message..."
-            v-model="newMessage"
-            @keyup.enter="sendMessage"
-            autocomplete="off"
-            autocorrect="on"
-            autocapitalize="sentences"
-            spellcheck="true"
-          />
-          <button class="chat__send-button" @click="sendMessage" aria-label="Send message">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="white"
-                aria-hidden="true"
-                focusable="false"
-            >
-                <path d="M1.94607 9.31543C1.42353 9.14125 1.4194 8.86022 1.95682 8.68108L21.043 2.31901C21.5715 2.14285 21.8746 2.43866 21.7265 2.95694L16.2733 22.0432C16.1223 22.5716 15.8177 22.59 15.5944 22.0876L11.9999 14L17.9999 6.00005L9.99992 12L1.94607 9.31543Z" />
-            </svg>
-            </button>
-        </div>
       </div>
-    </main>
-  </template>
-  
+
+      <div class="chat__input-panel">
+        <input
+          ref="inputRef"
+          class="chat__input"
+          type="text"
+          placeholder="Type a message..."
+          v-model="newMessage"
+          @keyup.enter="sendMessage"
+          autocomplete="off"
+          autocorrect="on"
+          autocapitalize="sentences"
+          spellcheck="true"
+        />
+        <button class="chat__send-button" @click="sendMessage" aria-label="Send message">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="white"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M1.94607 9.31543C1.42353 9.14125 1.4194 8.86022 1.95682 8.68108L21.043 2.31901C21.5715 2.14285 21.8746 2.43866 21.7265 2.95694L16.2733 22.0432C16.1223 22.5716 15.8177 22.59 15.5944 22.0876L11.9999 14L17.9999 6.00005L9.99992 12L1.94607 9.31543Z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
+</template>
 
 <style scoped>
-
-main{
-    padding: 0;
+main {
+  padding: 0;
 }
 .chat-layout {
   display: flex;
@@ -264,8 +309,8 @@ main{
   font-size: 11px;
 }
 
-.chat__message-container.sent .chat__message-header{
-    flex-direction: row-reverse;
+.chat__message-container.sent .chat__message-header {
+  flex-direction: row-reverse;
 }
 
 .chat__avatar {
@@ -331,11 +376,10 @@ main{
 }
 
 .chat__input:focus {
-  outline: none;          /* Remove the default focus outline */
-  box-shadow: none;       /* Remove any focus shadow */
+  outline: none; /* Remove the default focus outline */
+  box-shadow: none; /* Remove any focus shadow */
   border-color: transparent; /* Optional, if input has border */
 }
-
 
 .chat__send-button {
   background: var(--accent-color);
@@ -362,5 +406,4 @@ main{
     margin: 0;
   }
 }
-
 </style>

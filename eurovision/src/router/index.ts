@@ -29,11 +29,29 @@ const router = createRouter({
     name: 'profile',
     component: () => import('../views/ProfileView.vue'),
     },
+    // {
+    // path: '/vote/:countryId',
+    // name: 'VotingPage',
+    // component: () => import('@/views/VotingPage.vue')
+    // },
     {
-    path: '/vote/:countryId',
-    name: 'VotingPage',
-    component: () => import('@/views/VotingPage.vue')
-    },        
+        path: '/countries/:phase?',
+        name: 'countries',
+        component: () => import('../views/CountriesView.vue'),
+        props: route => ({ 
+          phase: route.params.phase || 'semi1' // default to semi1 if no phase
+        })
+      },
+      // Single voting route with phase parameter
+      {
+        path: '/vote/:phase/:countryId',
+        name: 'VotingPage',
+        component: () => import('@/views/VotingPage.vue'),
+        props: route => ({ 
+          countryId: route.params.countryId, 
+          phase: route.params.phase 
+        })
+      },        
   ],
 })
 

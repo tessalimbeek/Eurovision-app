@@ -1,123 +1,91 @@
 <template>
-    <main>
-
-        <img src="/pwa-512x512.png">
-
-        <h1>Join a Room</h1>
-  
-        <form @submit.prevent="handleLogin">
-          <input
-            v-model="name"
-            type="text"
-            placeholder="Your name"
-            required
-          />
-          <input
-            v-model="email"
-            type="email"
-            placeholder="Email"
-            required
-          />
-          <input
-            v-model="inviteCode"
-            type="text"
-            placeholder="Room code"
-            required
-            autocapitalize="none"
-            spellcheck="false"
-            autocomplete="off"
-          />
-  
-          <button
-            type="submit"
-          >
-            Join Room
-          </button>
-        </form>
-  
-        <p v-if="error" class="text-red-500 text-sm mt-4 text-center">{{ error }}</p>
-
-
-    </main>
-  </template>
-
+  <main>
+    <img src="/pwa-512x512.png" />
+    <h1>Join a Room</h1>
+    <form @submit.prevent="handleLogin">
+      <input v-model="name" type="text" placeholder="Your name" required />
+      <input v-model="email" type="email" placeholder="Email" required />
+      <input
+        v-model="inviteCode"
+        type="text"
+        placeholder="Room code"
+        required
+        autocapitalize="none"
+        spellcheck="false"
+        autocomplete="off"
+      />
+      <button type="submit">Join Room</button>
+    </form>
+    <p v-if="error" class="text-red-500 text-sm mt-4 text-center">{{ error }}</p>
+  </main>
+</template>
 
 <style scoped>
-
-form{
-    display: flex;
-    flex-direction: column;
+form {
+  display: flex;
+  flex-direction: column;
 }
-
 input {
   font-size: 16px;
 }
-
-input[type=text], input[type=email] {
+input[type='text'],
+input[type='email'] {
   width: 100%;
   padding: 12px 20px;
   margin: 8px 0;
   box-sizing: border-box;
 }
-
-h1{
-    text-align: center;
+h1 {
+  text-align: center;
 }
-img{
-    width: 70%;
-    display: block;
-    margin: 0 auto;
+img {
+  width: 70%;
+  display: block;
+  margin: 0 auto;
 }
-
 </style>
-  
-  <script setup>
-  import { ref } from 'vue'
-  import { useRouter, useRoute } from 'vue-router'
-  import { supabase } from '../supabase'
-  import { initChatSubscription } from '../composables/chatState' // ← add this
-  
-  const name = ref('')
-  const email = ref('')
-  const inviteCode = ref('')
-  const error = ref(null)
-  const router = useRouter()
-  const route = useRoute()
-  
-  const handleLogin = async () => {
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { supabase } from '../supabase'
+import { useChatNotifications } from '../composables/useChatNotifications'
+
+const { initializeNotifications, cleanup } = useChatNotifications()
+
+const name = ref('')
+const email = ref('')
+const inviteCode = ref('')
+const error = ref(null)
+const router = useRouter()
+const route = useRoute()
+
+const handleLogin = async () => {
   error.value = null
-
-  const { data: group, error: groupError } = await supabase
-    .from('groups')
-    .select('id')
-    .eq('invite_code', inviteCode.value.trim())
-    .single()
-
-    console.log('groupError:', groupError)
-    console.log('group:', group)
-
-  if (groupError || !group) {
-    error.value = 'Invalid room code.'
-    return
-  }
 
   const password = email.value // consistent password
 
-  // Sign up
+  // First, try to sign up
   let { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email: email.value,
     password,
+    options: {
+      data: {
+        full_name: name.value.trim(), // This will be used by the trigger
+      },
+    },
   })
 
   let user = signUpData?.user
 
-  // Sign in fallback
+  // If user already exists, sign in instead
   if (!user && signUpError?.message.includes('User already registered')) {
-    console.log("sign in")
+    console.log('User exists, signing in...')
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: email.value,
       password,
     })
+
     if (signInError) {
       error.value = signInError.message
       return
@@ -130,34 +98,30 @@ img{
     return
   }
 
-  const { data: existingProfile, error: fetchError } = await supabase
-    .from('users')
-    .select('id')
-    .eq('id', user.id)
-    .maybeSingle()
+  // For existing users, update their name if it's different
+  if (signUpError?.message.includes('User already registered')) {
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ name: name.value.trim() })
+      .eq('id', user.id)
 
-  if (fetchError) {
-    error.value = fetchError.message
-    return
-  }
-
-  if (!existingProfile) {
-    const { error: insertError } = await supabase.from('users').insert({
-      id: user.id,
-      name: name.value.trim(),
-      group_id: group.id,
-    })
-
-    if (insertError) {
-      error.value = insertError.message
-      return
+    if (updateError) {
+      console.warn('Could not update user name:', updateError.message)
     }
   }
 
-  initChatSubscription(group.id, route.path)
+  // Use the helper function to join the group
+  const { data: joinResult, error: joinError } = await supabase.rpc('join_group_with_invite_code', {
+    invite_code_param: inviteCode.value.trim(),
+  })
+
+  if (joinError || !joinResult?.success) {
+    error.value = joinResult?.error || 'Invalid room code or failed to join group.'
+    return
+  }
+
+  // Initialize chat subscription with the group ID
+  initializeNotifications()
   router.push('/home')
 }
-
-
-  </script>
-  
+</script>

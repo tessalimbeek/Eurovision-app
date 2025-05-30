@@ -4,11 +4,17 @@ import { supabase } from '@/supabase'
 import Navigation from '@/components/Navigation.vue'
 import { useRoute } from 'vue-router'
 
+import { useChatNotifications } from '@/composables/useChatNotifications'
+
+const { cleanup } = useChatNotifications()
+
 const isLoggedIn = ref(false)
 const route = useRoute()
 
 async function checkUser() {
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   isLoggedIn.value = !!user
 }
 
@@ -20,6 +26,7 @@ const { data: authListener } = supabase.auth.onAuthStateChange((_event, session)
 
 onUnmounted(() => {
   authListener.subscription.unsubscribe()
+  cleanup()
 })
 
 const showNavigation = computed(() => isLoggedIn.value && route.path !== '/')
@@ -29,4 +36,3 @@ const showNavigation = computed(() => isLoggedIn.value && route.path !== '/')
   <RouterView />
   <Navigation v-if="showNavigation" />
 </template>
-
