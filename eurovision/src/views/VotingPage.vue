@@ -37,7 +37,10 @@
             </div>
 
             <div class="voting-section">
-                <label>Song: {{ myVote.song }}</label>
+                <div class="section-icon">
+                    <img src="../assets/music.png">
+                    <label>Song: {{ myVote.song }}</label>
+                </div>
                 <input
                     type="range"
                     min="0"
@@ -48,7 +51,10 @@
                     class="custom-slider"
                 />
 
-                <label>Performance: {{ myVote.performance }}</label>
+                <div class="section-icon">
+                    <img src="../assets/dress.png">
+                    <label>Performace: {{ myVote.performance }}</label>
+                </div>
                 <input
                     type="range"
                     min="0"
@@ -59,13 +65,30 @@
                     class="custom-slider"
                 />
 
-                <label>Vocals: {{ myVote.vocals }}</label>
+                <div class="section-icon">
+                    <img src="../assets/microphone.png">
+                    <label>Vocals: {{ myVote.vocals }}</label>
+                </div>
                 <input
                     type="range"
                     min="0"
                     max="10"
                     step="1"
                     v-model.number="myVote.vocals"
+                    @change="submitVote"
+                    class="custom-slider"
+                />
+
+                <div class="section-icon">
+                    <img src="../assets/music.png">
+                    <label>Total score: {{ myVote.total_score }}</label>
+                </div>
+                <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    v-model.number="myVote.total_score"
                     @change="submitVote"
                     class="custom-slider"
                 />
@@ -78,12 +101,38 @@
 
             <div class="live-votes">
                 <h3>Group Votes</h3>
-                <ul>
-                    <li v-for="vote in groupVotes" :key="vote.user_id">
-                        <strong>{{ getUserName(vote.user_id) }}:</strong>
-                        Song: {{ vote.song }}, Performance: {{ vote.performance }}, Vocals: {{ vote.vocals }}
-                    </li>
-                </ul>
+                <div class="group-votes">
+                    <div v-for="vote in groupVotes" :key="vote.user_id" class="group-vote">
+                        <div class="image">
+                            <img :src="userAvatars[vote.user_id] || defaultAvatar" alt="Profile Picture" class="profile" />
+                            <strong>{{ getUserName(vote.user_id) }}:</strong>
+
+                        </div>
+                        
+
+                        <div class="scores">
+                            <div class="element">
+                                <img src="../assets/music.png">
+                                <label>Song: {{ vote.song }}</label>
+                            </div>
+
+                            <div class="element">
+                                <img src="../assets/dress.png">
+                                <label>Performance: {{ vote.performance }}</label>
+                            </div>
+
+                            <div class="element">
+                                <img src="../assets/microphone.png">
+                                <label>Vocals: {{ vote.vocals }}</label>
+                            </div>
+
+                            <div class="element">
+                                <img src="../assets/music.png">
+                                <label>Total score: {{ vote.total_score }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -95,7 +144,7 @@ import { useRoute} from 'vue-router'
 import { supabase } from '../supabase'
 import { watch } from 'vue'
 
-const myVote = ref({ song: 0, performance: 0, vocals: 0 })
+const myVote = ref({ song: 0, performance: 0, vocals: 0, total_score:0 })
 const myNote = ref({ content: '' })
 const groupVotes = ref([])
 const user = ref(null)
@@ -108,17 +157,14 @@ const currentPhase = ref(route.params.phase || 'semi1') // Get phase from route
 const allCountries = ref([])
 const prevCountryId = ref(null)
 const nextCountryId = ref(null)
+const userAvatars = ref({})
+const avatarUrl = ref('')
+const defaultAvatar = '/default-avatar.png'
 
 function getFlagUrl(filename) {
   return new URL(`../assets/flags/${filename}`, import.meta.url).href
 }
 
-function determinePhase(country) {
-  if (country.final) return 'final'
-  if (country.semi_final === 1) return 'semi1'
-  if (country.semi_final === 2) return 'semi2'
-  return 'semi1' // fallback
-}
 
 function isPhaseForFinal(phase) {
   return phase === 'final'
@@ -152,6 +198,26 @@ async function loadCountriesForPhase(phase) {
   return data || []
 }
 
+const generateSignedUrl = async (filePath) => {
+  if (!filePath) return null
+
+  try {
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+      .from('avatars')
+      .createSignedUrl(filePath, 60 * 60) // 1 hour valid
+
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      console.warn('Failed to generate signed URL:', signedUrlError)
+      return null
+    }
+
+    return signedUrlData.signedUrl
+  } catch (error) {
+    console.error('Error generating signed URL:', error)
+    return null
+  }
+}
+
 async function loadInitialData() {
   const { data: authData } = await supabase.auth.getUser()
   if (!authData?.user) return
@@ -160,11 +226,19 @@ async function loadInitialData() {
   // Get profile
   const { data: profile } = await supabase
     .from('users')
-    .select('group_id, name')
+    .select('group_id, name, avatar_url')
     .eq('id', user.value.id)
     .single()
 
   if (profile) groupId.value = profile.group_id
+
+  // Handle avatar URL
+  if (profile.avatar_url) {
+      const signedUrl = await generateSignedUrl(profile.avatar_url)
+      avatarUrl.value = signedUrl || defaultAvatar
+    } else {
+      avatarUrl.value = defaultAvatar
+    }
 
   // Get country
   const { data: countryData } = await supabase
@@ -203,13 +277,14 @@ async function loadInitialData() {
     .single()
   if (noteData) myNote.value = noteData
 
-  // Get group votes for this phase
   const { data: groupData } = await supabase
-    .from('votes')
-    .select('*')
-    .eq('country_id', countryId.value)
-    .eq('group_id', groupId.value)
-    .eq('is_final', isFinalVote)
+  .from('votes')
+  .select('*')
+  .eq('country_id', countryId.value)
+  .eq('group_id', groupId.value)
+  .eq('is_final', isFinalVote)
+  .neq('user_id', user.value.id) // Exclude your own vote
+
   if (groupData) groupVotes.value = groupData
 
   // Load user names for the group
@@ -219,13 +294,18 @@ async function loadInitialData() {
 async function submitVote() {
   console.log("submit vote")
   const isFinalVote = isPhaseForFinal(currentPhase.value)
+  const { song, performance, vocals, total_score } = myVote.value
   
   await supabase.from('votes').upsert({
     user_id: user.value.id,
     group_id: groupId.value,
     country_id: countryId.value,
     is_final: isFinalVote,
-    ...myVote.value,
+    // ...myVote.value,
+    song,
+    performance,
+    vocals,
+    total_score,
     updated_at: new Date().toISOString()
   })
 }
@@ -245,16 +325,26 @@ async function loadUserNames() {
   
   const { data: users } = await supabase
     .from('users')
-    .select('id, name')
+    .select('id, name, avatar_url')
     .eq('group_id', groupId.value)
-  
+
   if (users) {
-    userNames.value = users.reduce((acc, user) => {
-      acc[user.id] = user.name
-      return acc
-    }, {})
+    userNames.value = {}
+    userAvatars.value = {}
+
+    for (const u of users) {
+      userNames.value[u.id] = u.name
+
+      if (u.avatar_url) {
+        const signedUrl = await generateSignedUrl(u.avatar_url)
+        userAvatars.value[u.id] = signedUrl || defaultAvatar
+      } else {
+        userAvatars.value[u.id] = defaultAvatar
+      }
+    }
   }
 }
+
 
 function getUserName(userId) {
   if (userId === user.value.id) return 'You'
@@ -268,7 +358,7 @@ watch(() => route.params.countryId, async (newId, oldId) => {
     myNote.value = { content: '' }
     groupVotes.value = []
     countryId.value = parseInt(newId)
-    currentPhase.value = route.params.phase || 'semi1' // Update phase from route
+    currentPhase.value = route.params.phase || 'semi1'
     await loadInitialData()
   }
 })
@@ -311,6 +401,52 @@ img{
     height: 100px;
 }
 
+.group-votes .image{
+    display: flex;
+    flex-direction: column;
+}
+
+.group-votes .scores img{
+    height: 1.5em;
+    width: auto;
+}
+.group-votes .scores{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.group-votes .scores .element{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.group-vote{
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.section-icon{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    margin-top: 1em;
+}
+.section-icon img{
+    width: 20px;
+    height: auto;
+    object-fit: contain;
+}
+
+img.profile {
+  width: 3rem;
+  height: 3rem;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .title{
     display: flex;
     flex-direction: row;
@@ -344,7 +480,6 @@ input[type="range"] {
   .voting-section label,
   .notes-section label {
     display: block;
-    margin-top: 1em;
     font-weight: bold;
   }
 
@@ -381,32 +516,12 @@ input[type="range"] {
 }
 
   .notes-section textarea {
-    width: 100%;
+    width: calc(100% - 1rem);
     min-height: 100px;
     margin-top: 0.25em;
     padding: 0.5em;
     font-size: 1rem;
     resize: vertical;
-  }
-  
-  .live-votes {
-    margin-top: 2em;
-    border-radius: 8px;
-    padding: 1em;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  
-  .live-votes ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .live-votes li {
-    padding: 0.25em 0;
-    border-bottom: 1px solid #ccc;
-    font-size: 0.9rem;
   }
 
   .nav-buttons {

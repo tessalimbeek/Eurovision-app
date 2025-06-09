@@ -1,9 +1,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { supabase } from '../supabase'
 import { nextTick } from 'vue'
-import { unreadCount } from '../composables/useChatNotifications'
+import { unreadCount } from '@/composables/useChatNotifications'
 
 const user = ref(null)
 const messages = ref([])

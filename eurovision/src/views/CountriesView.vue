@@ -1,12 +1,15 @@
 <!-- CountriesView.vue -->
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { supabase } from '../supabase'
-import CountryBox from '../components/CountryBox.vue'
+import CountryBox from '@/components/CountryBox.vue'
+import PersonalTop5Modal from '@/components/PersonalTop5.vue'
 
-const route = useRoute()
+const user = ref(null)
 const router = useRouter()
+const showPersonalTop5 = ref(false)
+const groupId = ref(null)
 
 const props = defineProps({
   phase: {
@@ -49,6 +52,19 @@ const filteredCountries = computed(() => {
 async function fetchCountries() {
   let query = supabase.from('countries').select('*')
 
+  const { data: authData } = await supabase.auth.getUser()
+  if (!authData?.user) return
+  user.value = authData.user
+
+  // Get profile
+  const { data: profile } = await supabase
+    .from('users')
+    .select('group_id, name')
+    .eq('id', user.value.id)
+    .single()
+
+  if (profile) groupId.value = profile.group_id
+
   // Filter based on the active tab
   switch (activeTab.value) {
     case 'semi1':
@@ -72,13 +88,14 @@ function switchTab(tab) {
   fetchCountries()
 }
 
+
 onMounted(() => {
   fetchCountries()
 })
 </script>
 
 <template>
-  <main>
+  <main class="main">
     <h1>Eurovision Countires</h1>
     <div class="countries-view">
       <div class="tabs">
@@ -102,14 +119,29 @@ onMounted(() => {
         />
       </div>
     </div>
+
+    <!-- Personal Top 5 Button -->
+    <div class="fixed-bottom-button">
+      <button 
+        @click="showPersonalTop5 = true"
+        class="top-5-button bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-2"
+      >
+        <span class="text-xl">🏆</span>
+        <span class="font-semibold">Show My Top 5</span>
+      </button>
+    </div>
+
+    <!-- Personal Top 5 Modal -->
+    <PersonalTop5Modal 
+    :is-open="showPersonalTop5"
+    :group-id="groupId"
+    :phase="activeTab"
+    @close="showPersonalTop5 = false"
+    />
   </main>
 </template>
 
 <style scoped>
-.countries-view {
-  padding: 20px;
-}
-
 .tabs {
   display: flex;
   gap: 10px;
@@ -144,4 +176,17 @@ onMounted(() => {
   flex-direction: column;
   gap: 10px;
 }
+
+
+.top-5-button {
+    margin-top: 20px;
+    width: 100%;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.top-5-button:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
 </style>

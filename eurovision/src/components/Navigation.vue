@@ -7,8 +7,8 @@ import { unreadCount } from '@/composables/useChatNotifications'
 const items = [
   { to: '/home', label: 'Home', icon: 'home' },
   { to: '/countries/semi1', label: 'Scores', icon: 'star' },
-  { to: '/chat', label: 'chat', icon: 'chat' },
-  { to: '/profile', label: 'profile', icon: 'profile' },
+  { to: '/chat', label: 'Chat', icon: 'chat' },
+  { to: '/profile', label: 'Profile', icon: 'profile' },
 ]
 </script>
 
@@ -103,6 +103,7 @@ const items = [
   background: #fff;
   padding: 10px 0 20px;
   border-top: 1px solid #e5e7eb; /* light gray */
+  z-index: 30;
 }
 
 .nav-item {
