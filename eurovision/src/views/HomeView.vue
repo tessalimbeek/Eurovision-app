@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 // Set your target date/time here
-const targetDate = new Date('2025-12-31T23:59:59').getTime()
+const targetDate = new Date('2026-05-10T21:00:00').getTime()
 
 const timeLeft = ref({
   days: 0,
@@ -82,10 +82,32 @@ onUnmounted(() => {
         <h3>🎉 Event has started! 🎉</h3>
       </div>
     </div>
+
+    <div class="quizz-button">
+      <RouterLink to="/quiz">
+        <button>Want to take a quiz?</button>
+      </RouterLink>
+    </div>
   </main>
 </template>
 
 <style scoped>
+.quizz-button {
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
+}
+
+.quizz-button a {
+  width: 100%;
+}
+
+.quizz-button button {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
 .countdown-container {
   text-align: center;
   padding: 2rem;

@@ -122,10 +122,10 @@ const items = [
 }
 
 .nav-item.active {
-  color: var(--background-color);
+  color: var(--accent-color);
 }
 
 .nav-item.active svg {
-  stroke: var(--background-color);
+  stroke: var(--accent-color);
 }
 </style>

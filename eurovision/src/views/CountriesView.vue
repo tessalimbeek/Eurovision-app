@@ -1,4 +1,3 @@
-<!-- CountriesView.vue -->
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -88,7 +87,6 @@ function switchTab(tab) {
   fetchCountries()
 }
 
-
 onMounted(() => {
   fetchCountries()
 })
@@ -122,7 +120,7 @@ onMounted(() => {
 
     <!-- Personal Top 5 Button -->
     <div class="fixed-bottom-button">
-      <button 
+      <button
         @click="showPersonalTop5 = true"
         class="top-5-button bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-2"
       >
@@ -132,11 +130,11 @@ onMounted(() => {
     </div>
 
     <!-- Personal Top 5 Modal -->
-    <PersonalTop5Modal 
-    :is-open="showPersonalTop5"
-    :group-id="groupId"
-    :phase="activeTab"
-    @close="showPersonalTop5 = false"
+    <PersonalTop5Modal
+      :is-open="showPersonalTop5"
+      :group-id="groupId"
+      :phase="activeTab"
+      @close="showPersonalTop5 = false"
     />
   </main>
 </template>
@@ -177,10 +175,9 @@ onMounted(() => {
   gap: 10px;
 }
 
-
 .top-5-button {
-    margin-top: 20px;
-    width: 100%;
+  margin-top: 20px;
+  width: 100%;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -188,5 +185,4 @@ onMounted(() => {
 .top-5-button:hover {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
-
 </style>

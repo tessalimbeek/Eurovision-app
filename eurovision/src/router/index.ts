@@ -39,7 +39,17 @@ const router = createRouter({
         countryId: route.params.countryId, 
         phase: route.params.phase 
     })
-    },        
+    },
+    {
+    path: '/quiz',
+    name: 'quiz',
+    component: () => import('../views/EurovisionQuiz.vue'),
+    },
+    {
+    path: '/quiz/:quizId',
+    name: 'quizPage',
+    component: () => import('../views/QuizPage.vue'),
+    },           
   ],
 })
 

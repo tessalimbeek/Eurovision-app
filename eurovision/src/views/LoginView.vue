@@ -47,18 +47,17 @@ img {
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { supabase } from '../supabase'
 import { useChatNotifications } from '../composables/useChatNotifications'
 
-const { initializeNotifications, cleanup } = useChatNotifications()
+const { initializeNotifications } = useChatNotifications()
 
 const name = ref('')
 const email = ref('')
 const inviteCode = ref('')
 const error = ref(null)
 const router = useRouter()
-const route = useRoute()
 
 const handleLogin = async () => {
   error.value = null

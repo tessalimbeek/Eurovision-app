@@ -14,7 +14,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    /* --chat-background: rgba(10, 14, 14, 0.95); */
     --chat-panel-background: #ffffff;
     --chat-bubble-background: #ffffff;
     --chat-add-button-background: #968787;
@@ -31,7 +30,7 @@ html, body {
 }
 
 body.keyboard-open .bottom-nav {
-    display: none; /* Or position: fixed; bottom: -100px; */
+    display: none;
   }
   
 a {
@@ -76,10 +75,15 @@ button:focus,
 button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
 }
-/*   
-.card {
-    padding: 2em;
-} */
+
+.button-back{
+    height: 30px;
+}
+
+.button-back svg{
+    height: 100%;
+    cursor: pointer;
+}
   
 #app {
     flex: 1 1 auto;
@@ -89,13 +93,6 @@ button:focus-visible {
     margin-bottom: 75px;
     overflow-y: hidden;
 }
-    
-  
-/* .router-view-wrapper {
-    flex: 1 1 auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: calc(env(safe-area-inset-bottom) + 56px);
-} */
   
 main{
     padding: 1.5rem;

@@ -1,17 +1,15 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { supabase } from '../supabase'
-import { nextTick } from 'vue'
 import { unreadCount } from '@/composables/useChatNotifications'
 
 const user = ref(null)
 const messages = ref([])
 const newMessage = ref('')
 const userMap = ref({})
-let chatSubscription = null // Separate subscription for chat updates
+let chatSubscription = null
 
 const defaultAvatar = '/default-avatar.png'
-
 const inputRef = ref(null)
 
 function dismissKeyboardOnScroll() {
@@ -34,6 +32,26 @@ function scrollToBottom() {
   })
 }
 
+async function fetchAndCacheAvatar(userId, signedUrl) {
+  try {
+    const response = await fetch(signedUrl)
+    const blob = await response.blob()
+    const reader = new FileReader()
+
+    return new Promise((resolve) => {
+      reader.onloadend = () => {
+        const base64Data = reader.result
+        localStorage.setItem(`avatar_${userId}`, base64Data)
+        resolve(base64Data)
+      }
+      reader.readAsDataURL(blob)
+    })
+  } catch (err) {
+    console.warn(`Failed to cache avatar for user ${userId}`, err)
+    return null
+  }
+}
+
 async function fetchInitialData() {
   const {
     data: { user: authUser },
@@ -41,7 +59,6 @@ async function fetchInitialData() {
   if (!authUser) return
   user.value = authUser
 
-  // Use the get_user_group_id function instead of direct query
   const { data: userGroupId, error: groupError } = await supabase.rpc('get_user_group_id', {
     user_id: user.value.id,
   })
@@ -70,15 +87,19 @@ async function fetchInitialData() {
   userMap.value = Object.fromEntries(
     await Promise.all(
       users.map(async (u) => {
-        let avatar = null
+        const cached = localStorage.getItem(`avatar_${u.id}`)
+        if (cached) {
+          return [u.id, { name: u.name, avatar_url: cached }]
+        }
 
+        let avatar = null
         if (u.avatar_url) {
           const { data: signed, error } = await supabase.storage
             .from('avatars')
             .createSignedUrl(u.avatar_url, 60 * 60)
 
           if (!error && signed?.signedUrl) {
-            avatar = signed.signedUrl
+            avatar = await fetchAndCacheAvatar(u.id, signed.signedUrl)
           }
         }
 
@@ -87,46 +108,51 @@ async function fetchInitialData() {
     ),
   )
 
-chatSubscription = supabase
-    .channel('chat-live-updates') // Different channel name
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages'
-    }, async payload => {
-      if (payload.new.group_id === userGroupId) {
-        messages.value.push(payload.new)
-        
-        // Update userMap if we haven't seen this sender before
-        if (!userMap.value[payload.new.sender_id]) {
-          const { data: newUser } = await supabase
-            .from('users')
-            .select('id, name, avatar_url')
-            .eq('id', payload.new.sender_id)
-            .single()
+  chatSubscription = supabase
+    .channel('chat-live-updates')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+      },
+      async (payload) => {
+        if (payload.new.group_id === userGroupId) {
+          messages.value.push(payload.new)
 
-          if (newUser) {
-            let avatar = null
-            if (newUser.avatar_url) {
-              const { data: signed, error } = await supabase
-                .storage
-                .from('avatars')
-                .createSignedUrl(newUser.avatar_url, 60 * 60)
+          if (!userMap.value[payload.new.sender_id]) {
+            const { data: newUser } = await supabase
+              .from('users')
+              .select('id, name, avatar_url')
+              .eq('id', payload.new.sender_id)
+              .single()
 
-              if (!error && signed?.signedUrl) {
-                avatar = signed.signedUrl
+            if (newUser) {
+              const cached = localStorage.getItem(`avatar_${newUser.id}`)
+              let avatar = cached
+
+              if (!cached && newUser.avatar_url) {
+                const { data: signed, error } = await supabase.storage
+                  .from('avatars')
+                  .createSignedUrl(newUser.avatar_url, 60 * 60)
+
+                if (!error && signed?.signedUrl) {
+                  avatar = await fetchAndCacheAvatar(newUser.id, signed.signedUrl)
+                }
+              }
+
+              userMap.value[newUser.id] = {
+                name: newUser.name,
+                avatar_url: avatar,
               }
             }
-            userMap.value[newUser.id] = { name: newUser.name, avatar_url: avatar }
           }
+
+          nextTick(() => scrollToBottom())
         }
-        
-        // Always scroll to bottom for new messages when on chat page
-        nextTick(() => {
-          scrollToBottom()
-        })
-      }
-    })
+      },
+    )
     .subscribe()
 }
 
@@ -144,7 +170,6 @@ async function sendMessage() {
   const content = newMessage.value.trim()
   newMessage.value = ''
 
-  // Get user's group_id before sending message
   const { data: userGroupId, error: groupError } = await supabase.rpc('get_user_group_id', {
     user_id: user.value.id,
   })
@@ -154,7 +179,6 @@ async function sendMessage() {
     return
   }
 
-  // Insert message with explicit group_id and sender_id
   const { error } = await supabase.from('messages').insert([
     {
       content,
@@ -165,7 +189,6 @@ async function sendMessage() {
 
   if (error) {
     console.error('Error sending message:', error)
-    // Restore the message content if there was an error
     newMessage.value = content
   }
 }
