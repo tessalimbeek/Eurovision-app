@@ -100,20 +100,20 @@ Open your browser to http://localhost:5173
 
 ```bash
 ├── eurovision/
-|   ├── public/
-|   │   └── flags/              # Eurovision heart flags
-|   ├── src/
-|   │   ├── components/
-|   |   ├── composables/ 
-|   │   ├── views/
-|   |   ├── router/
-|   |   ├── types/
-|   |   ├── App.vue
-|   │   └── main.ts
-|   ├── supabase/
-|   │   └── schema.sql          # Full SQL setup
-|   ├── .env.example
-|   └── README.md
+│   ├── public/
+│   │   └── flags/              # Eurovision heart flags
+│   ├── src/
+│   │   ├── components/
+│   │   ├── composables/ 
+│   │   ├── views/
+│   │   ├── router/
+│   │   ├── types/
+│   │   ├── App.vue
+│   │   └── main.ts
+│   ├── supabase/
+│   │   └── schema.sql          # Full SQL setup
+│   ├── .env.example
+│   └── README.md
 ```
 
 ## Flag Assets License
