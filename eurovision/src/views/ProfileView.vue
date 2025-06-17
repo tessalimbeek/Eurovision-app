@@ -223,6 +223,7 @@ const fetchProfile = async () => {
       .single()
 
     if (profileError) {
+        console.log("we found an error")
       console.error('Error fetching profile:', profileError)
       return
     }

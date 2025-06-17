@@ -7,6 +7,7 @@ const user = ref(null)
 const messages = ref([])
 const newMessage = ref('')
 const userMap = ref({})
+const fileInputRef = ref(null)
 let chatSubscription = null
 
 const defaultAvatar = '/default-avatar.png'
@@ -23,6 +24,10 @@ function dismissKeyboardOnScroll() {
   })
 }
 
+function triggerFileInput() {
+  fileInputRef.value?.click()
+}
+
 function scrollToBottom() {
   nextTick(() => {
     const chatBoard = document.querySelector('.chat__conversation-board')
@@ -30,6 +35,66 @@ function scrollToBottom() {
       chatBoard.scrollTop = chatBoard.scrollHeight
     }
   })
+}
+
+async function handleFileUpload(event) {
+  console.log('File upload triggered', event.target.files)
+
+  const file = event.target.files[0]
+  if (!file || !user.value) return
+
+  //   const fileName = `${user.value.id}/${Date.now()}-${file.name}`
+  const fileName = `${userGroupId}/${user.value.id}-${Date.now()}-${file.name}`
+
+  // Upload image to Supabase
+  const uploadResult = await supabase.storage.from('chat-images').upload(fileName, file)
+
+  if (uploadResult.error) {
+    console.error('Image upload failed:', uploadResult.error)
+    return
+  }
+
+  const imagePath = uploadResult.data.path
+
+  // Create signed URL
+  const signedUrlResult = await supabase.storage
+    .from('chat-images')
+    .createSignedUrl(imagePath, 60 * 60 * 24 * 7)
+
+  if (signedUrlResult.error || !signedUrlResult.data?.signedUrl) {
+    console.error('Failed to get signed URL:', signedUrlResult.error)
+    return
+  }
+
+  const signedUrl = signedUrlResult.data.signedUrl
+
+  // Get user group
+  const { data: userGroupId, error: groupError } = await supabase.rpc('get_user_group_id', {
+    user_id: user.value.id,
+  })
+
+  if (groupError || !userGroupId) {
+    console.error('Error fetching user group for image:', groupError)
+    return
+  }
+
+  // Insert message with image
+  const { error: insertError } = await supabase.from('messages').insert([
+    {
+      content: '',
+      sender_id: user.value.id,
+      group_id: userGroupId,
+      is_image: true,
+      image_url: signedUrl,
+    },
+  ])
+
+  if (insertError) {
+    console.error('Error inserting image message:', insertError)
+  }
+
+  // Reset file input
+  event.target.value = ''
 }
 
 async function fetchAndCacheAvatar(userId, signedUrl) {
@@ -234,12 +299,19 @@ onUnmounted(() => {
             <span class="chat__username">{{ getUserName(msg.sender_id) }}</span>
           </div>
 
-          <div class="chat__message-bubble">
-            {{ msg.content }}
+          <div
+            class="chat__message-bubble"
+            :class="{ 'chat__message-bubble--image': msg.is_image && msg.image_url }"
+          >
+            <template v-if="msg.is_image && msg.image_url">
+              <img :src="msg.image_url" alt="image" class="chat__image-message" loading="lazy" />
+            </template>
+            <template v-else>
+              {{ msg.content }}
+            </template>
           </div>
         </div>
       </div>
-
       <div class="chat__input-panel">
         <input
           ref="inputRef"
@@ -248,12 +320,42 @@ onUnmounted(() => {
           placeholder="Type a message..."
           v-model="newMessage"
           @keyup.enter="sendMessage"
-          autocomplete="off"
-          autocorrect="on"
-          autocapitalize="sentences"
-          spellcheck="true"
         />
-        <button class="chat__send-button" @click="sendMessage" aria-label="Send message">
+        <input type="file" ref="fileInputRef" @change="handleFileUpload" accept="image/*" hidden />
+
+        <button
+          class="chat__send-button"
+          @click="triggerFileInput"
+          aria-label="Upload image"
+          v-show="newMessage.trim().length === 0"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
+            />
+          </svg>
+        </button>
+
+        <button
+          class="chat__send-button"
+          @click="sendMessage"
+          aria-label="Send message"
+          v-show="newMessage.trim().length > 0"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -314,6 +416,12 @@ main {
   gap: 4px;
 }
 
+.chat__image-message {
+  max-width: 100%;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
 .chat__message-container.sent {
   align-self: flex-end;
   text-align: right;
@@ -361,13 +469,19 @@ main {
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
 }
 
+.chat__message-bubble--image {
+  padding: 2px;
+  background: transparent;
+  box-shadow: none;
+}
+
 .chat__message-container.sent .chat__message-bubble {
   background: var(--chat-bubble-sent-background, #0b93f6);
   color: white;
   border-bottom-right-radius: 4px;
   border-bottom-left-radius: 16px;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
 }
 
 .chat__message-container.received .chat__message-bubble {
