@@ -33,7 +33,8 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 
 ## 📸 Screenshot
 
-![Screenshot of the app interface](screenshot.png)
+![Homepage Screenshot](./screenshots/home.png)
+![Chat Screenshot](./screenshots/chat.png)
 
 ---
 
