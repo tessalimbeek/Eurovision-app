@@ -51,6 +51,7 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 ```bash
 git clone https://github.com/tessalimbeek/eurovision-app.git
 cd eurovision-app
+cd eurovision
 ```
 
 ### 2. Install dependencies
@@ -73,6 +74,19 @@ In the Supabase dashboard:
 Open the SQL Editor
 Paste and run the contents of supabase/schema.sql
 (This file defines all tables, RLS policies, and functions)
+
+
+### 5. Add the whitelist emails
+
+Open the SQL Editor
+and paste this and run the contents
+
+```bash
+insert into email_whitelist (email)
+values 
+  ('example@example.com'),
+  ('example@example.com');
+```
     
 ### 5. Configure Environment Variables
 
