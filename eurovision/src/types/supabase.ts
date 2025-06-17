@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      countries: {
+        Row: {
+          artist_name: string | null
+          code: string | null
+          final: boolean | null
+          final_running_order: number | null
+          flag: string | null
+          id: number
+          name: string
+          semi_final: number | null
+          semi_running_order: number | null
+          song_name: string | null
+        }
+        Insert: {
+          artist_name?: string | null
+          code?: string | null
+          final?: boolean | null
+          final_running_order?: number | null
+          flag?: string | null
+          id?: number
+          name: string
+          semi_final?: number | null
+          semi_running_order?: number | null
+          song_name?: string | null
+        }
+        Update: {
+          artist_name?: string | null
+          code?: string | null
+          final?: boolean | null
+          final_running_order?: number | null
+          flag?: string | null
+          id?: number
+          name?: string
+          semi_final?: number | null
+          semi_running_order?: number | null
+          song_name?: string | null
+        }
+        Relationships: []
+      }
       groups: {
         Row: {
           id: string
@@ -26,6 +65,76 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          group_id: string | null
+          id: string
+          image_url: string | null
+          is_image: boolean | null
+          sender_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_image?: boolean | null
+          sender_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_image?: boolean | null
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          content: string | null
+          country_id: number
+          group_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          country_id: number
+          group_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          country_id?: number
+          group_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
@@ -59,12 +168,71 @@ export type Database = {
           },
         ]
       }
+      votes: {
+        Row: {
+          country_id: number
+          group_id: string
+          is_final: boolean
+          performance: number | null
+          song: number | null
+          total_score: number | null
+          updated_at: string | null
+          user_id: string
+          vocals: number | null
+        }
+        Insert: {
+          country_id: number
+          group_id: string
+          is_final?: boolean
+          performance?: number | null
+          song?: number | null
+          total_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          vocals?: number | null
+        }
+        Update: {
+          country_id?: number
+          group_id?: string
+          is_final?: boolean
+          performance?: number | null
+          song?: number | null
+          total_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          vocals?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_invite_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_user_group_id: {
+        Args: { user_id: string }
+        Returns: string
+      }
+      join_group_with_invite_code: {
+        Args: { invite_code_param: string }
+        Returns: Json
+      }
+      same_group_as_auth_user: {
+        Args: { target_group_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
