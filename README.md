@@ -111,8 +111,8 @@ Open your browser to http://localhost:5173
 ```
 
 ## Flag Assets License
-- Source: Wikimedia Commons – Flag heart symbols of Eurovision (https://commons.wikimedia.org/wiki/Flag_heart_symbols_of_Eurovision).
-- License: Creative Commons Attribution-ShareAlike 4.0(https://creativecommons.org/licenses/by-sa/4.0/)
+- [Source: Wikimedia Commons – Flag heart symbols of Eurovision](https://commons.wikimedia.org/wiki/Flag_heart_symbols_of_Eurovision).
+- [License: Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 ## Disclaimer
 This project is a fan-made portfolio/demo app.
