@@ -34,16 +34,15 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import quizzesData from '@/assets/quizzes.json'
 
 const router = useRouter()
-
-const quizzes = ref([
-  { id: '2023', title: 'Eurovision 2023', emoji: '🎤', score: null },
-  { id: '2024', title: 'Eurovision 2024', emoji: '🌟', score: null },
-])
+const quizzes = ref([])
 
 onMounted(() => {
-  // Load scores from localStorage
+  quizzes.value = quizzesData.map(q => ({ ...q, score: null }))
+
+  // Load saved scores
   quizzes.value.forEach((quiz) => {
     const savedScore = localStorage.getItem(`quiz-score-${quiz.id}`)
     if (savedScore !== null) {
@@ -60,6 +59,8 @@ function goBack() {
   router.back()
 }
 </script>
+
+
 
 <style scoped>
 .quiz-list {

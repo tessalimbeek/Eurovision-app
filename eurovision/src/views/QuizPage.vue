@@ -57,56 +57,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import quizzes from '../assets/quizzes.json'
 
 const router = useRouter()
 const route = useRoute()
-
-const quizzes = [
-  {
-    id: '2023',
-    title: 'Eurovision 2023',
-    emoji: '🎤',
-    questions: [
-      {
-        question: 'Which country won Eurovision 2023?',
-        answers: ['Sweden', 'Finland', 'Ukraine', 'Italy'],
-        correctIndex: 0,
-      },
-      {
-        question: 'How many countries participated in Eurovision 2023?',
-        answers: ['36', '37', '40', '41'],
-        correctIndex: 1,
-      },
-      {
-        question: 'Who hosted Eurovision 2023?',
-        answers: ['Italy', 'Sweden', 'UK', 'France'],
-        correctIndex: 2,
-      },
-    ],
-  },
-  {
-    id: '2024',
-    title: 'Eurovision 2024',
-    emoji: '🌟',
-    questions: [
-      {
-        question: 'Which country won Eurovision 2024?',
-        answers: ['Sweden', 'France', 'Ukraine', 'Italy'],
-        correctIndex: 1,
-      },
-      {
-        question: 'How many countries participated in Eurovision 2024?',
-        answers: ['36', '37', '40', '42'],
-        correctIndex: 2,
-      },
-      {
-        question: 'Who hosted Eurovision 2024?',
-        answers: ['Sweden', 'France', 'UK', 'Germany'],
-        correctIndex: 0,
-      },
-    ],
-  },
-]
 
 const selectedQuiz = ref(null)
 const currentQuestionIndex = ref(0)
@@ -145,7 +99,7 @@ function goBack() {
 }
 
 onMounted(() => {
-  const quizId = route.params.quizId
+ const quizId = route.params.quizId
   selectedQuiz.value = quizzes.find((q) => q.id === quizId)
 })
 </script>
