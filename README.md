@@ -32,9 +32,13 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 ---
 
 ## 📸 Screenshot
+<p align="center">
+  <img src="./eurovision/screenshots/login.png" alt="Login Screenshot" width="20%" style="margin-right: 10px;" />
+  <img src="./eurovision/screenshots/scores.png" alt="Scores Screenshot" width="20%" style="margin-right: 10px;"/>
+  <img src="./eurovision/screenshots/chat.png" alt="Chat Screenshot" width="20%" style="margin-right: 10px;"/>
+  <img src="./eurovision/screenshots/profile.png" alt="Profile Screenshot" width="20%" />
+</p>
 
-![Homepage Screenshot](./screenshots/home.png)
-![Chat Screenshot](./screenshots/chat.png)
 
 ---
 
@@ -95,20 +99,21 @@ Open your browser to http://localhost:5173
 ## Project structure
 
 ```bash
-├── public/
-│   └── flags/              # Eurovision heart flags
-├── src/
-│   ├── components/
-|   ├── composables/ 
-│   ├── views/
-|   ├── router/
-|   ├── types/
-|   ├── App.vue
-│   └── main.ts
-├── supabase/
-│   └── schema.sql          # Full SQL setup
-├── .env.example
-└── README.md
+├── eurovision/
+|   ├── public/
+|   │   └── flags/              # Eurovision heart flags
+|   ├── src/
+|   │   ├── components/
+|   |   ├── composables/ 
+|   │   ├── views/
+|   |   ├── router/
+|   |   ├── types/
+|   |   ├── App.vue
+|   │   └── main.ts
+|   ├── supabase/
+|   │   └── schema.sql          # Full SQL setup
+|   ├── .env.example
+|   └── README.md
 ```
 
 ## Flag Assets License
