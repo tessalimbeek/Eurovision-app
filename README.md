@@ -1,6 +1,6 @@
-# 🎤 Eurovision Fan Voting App
+# 🎤 Eurovision Fan Voting PWA
 
-A real-time, fan-made Eurovision web app where users can chat, vote, and take notes — all in private groups.
+A real-time, fan-made Eurovision pwa app where users can chat, vote, and take notes — all in private groups.
 
 Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 
@@ -13,7 +13,7 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 - 🔐 User authentication
 - 👥 Group-based chat and access
 - 🗳️ Vote casting and tracking per user/group
-- 📝 Private and group notes
+- 📝 Private notes
 - 🖼️ Avatar and image upload support (via Supabase Storage)
 - 🌍 Eurovision-style heart flags (from Wikimedia Commons)
 
@@ -26,7 +26,7 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 - [Supabase](https://supabase.com/)
 - [PostgreSQL + RLS](https://supabase.com/docs/guides/auth/row-level-security)
 - HTML5 & CSS3 – markup and styling
-- JavaScript (ES6+)
+- Typescript
 - SVG icons – inline from [W3C SVG](https://www.w3.org/2000/svg)
   
 ---
