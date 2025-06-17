@@ -1,5 +1,5 @@
 // composables/useChatNotifications.ts
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref} from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '../supabase'
 import type { RealtimeChannel } from '@supabase/supabase-js'

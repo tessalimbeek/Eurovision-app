@@ -59,8 +59,21 @@ const inviteCode = ref('')
 const error = ref(null)
 const router = useRouter()
 
+// Hardcoded whitelist of allowed emails
+const allowedEmails = [
+  'tessa.limbeek@gmail.com',
+  't.l.limbeek@student.utwente.nl',
+  // Add more allowed emails here
+]
+
 const handleLogin = async () => {
   error.value = null
+
+  // Check if email is whitelisted
+  if (!allowedEmails.includes(email.value.trim().toLowerCase())) {
+    error.value = 'Access denied: your email is not authorized.'
+    return
+  }
 
   const password = email.value // consistent password
 
