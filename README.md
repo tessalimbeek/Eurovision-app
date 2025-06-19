@@ -11,7 +11,7 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 ## ✨ Features
 
 - 🔐 User authentication
-- 👥 Group-based chat and access
+- 👥 Group-based chat
 - 🗳️ Vote casting and tracking per user/group
 - 📝 Private notes
 - 🖼️ Avatar and image upload support (via Supabase Storage)
@@ -25,7 +25,7 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 - [Vue Router](https://router.vuejs.org/) – for client-side navigation
 - [Supabase](https://supabase.com/)
 - [PostgreSQL + RLS](https://supabase.com/docs/guides/auth/row-level-security)
-- HTML5 & CSS3 – markup and styling
+- HTML & CSS – markup and styling
 - Typescript
 - SVG icons – inline from [W3C SVG](https://www.w3.org/2000/svg)
   
@@ -75,8 +75,13 @@ Open the SQL Editor
 Paste and run the contents of supabase/schema.sql
 (This file defines all tables, RLS policies, and functions)
 
+### 5. Enable realtime for votes and messages
 
-### 5. Add the whitelist emails
+In the Supabase dashboard:
+
+Open Table Editor and turn on Realtime
+
+### 6. Add the whitelist emails
 
 Open the SQL Editor
 and paste this and run the contents
@@ -88,7 +93,7 @@ values
   ('example@example.com');
 ```
     
-### 5. Configure Environment Variables
+### 7. Configure Environment Variables
 
 Create a file called .env in the root directory:
 
@@ -102,7 +107,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 You can also copy .env.example and rename it to .env.
 
 
-### 6. Start the App
+### 8. Start the App
 
 ```bash
 npm run dev
