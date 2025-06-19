@@ -1,50 +1,3 @@
-<template>
-  <main>
-    <img src="/pwa-512x512.png" />
-    <h1>Join a Room</h1>
-    <form @submit.prevent="handleLogin">
-      <input v-model="name" type="text" placeholder="Your name" required />
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input
-        v-model="inviteCode"
-        type="text"
-        placeholder="Room code"
-        required
-        autocapitalize="none"
-        spellcheck="false"
-        autocomplete="off"
-      />
-      <button type="submit">Join Room</button>
-    </form>
-    <p v-if="error" class="text-red-500 text-sm mt-4 text-center">{{ error }}</p>
-  </main>
-</template>
-
-<style scoped>
-form {
-  display: flex;
-  flex-direction: column;
-}
-input {
-  font-size: 16px;
-}
-input[type='text'],
-input[type='email'] {
-  width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
-  box-sizing: border-box;
-}
-h1 {
-  text-align: center;
-}
-img {
-  width: 70%;
-  display: block;
-  margin: 0 auto;
-}
-</style>
-
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -59,18 +12,17 @@ const inviteCode = ref('')
 const error = ref(null)
 const router = useRouter()
 
-// Hardcoded whitelist of allowed emails
-const allowedEmails = [
-  'tessa.limbeek@gmail.com',
-  't.l.limbeek@student.utwente.nl',
-  // Add more allowed emails here
-]
-
 const handleLogin = async () => {
   error.value = null
 
-  // Check if email is whitelisted
-  if (!allowedEmails.includes(email.value.trim().toLowerCase())) {
+  // check if email is whitelisted
+  const { data: whitelist, error: whiteListError } = await supabase
+    .from('email_whitelist')
+    .select('*')
+    .eq('email', email.value)
+    .single()
+
+  if (whiteListError) {
     error.value = 'Access denied: your email is not authorized.'
     return
   }
@@ -134,6 +86,54 @@ const handleLogin = async () => {
 
   // Initialize chat subscription with the group ID
   initializeNotifications()
+  // push to home when signup or sign in is successfull
   router.push('/home')
 }
 </script>
+
+<template>
+  <main>
+    <img src="/pwa-512x512.png" />
+    <h1>Join a Room</h1>
+    <form @submit.prevent="handleLogin">
+      <input v-model="name" type="text" placeholder="Your name" required />
+      <input v-model="email" type="email" placeholder="Email" required />
+      <input
+        v-model="inviteCode"
+        type="text"
+        placeholder="Room code"
+        required
+        autocapitalize="none"
+        spellcheck="false"
+        autocomplete="off"
+      />
+      <button type="submit">Join Room</button>
+    </form>
+    <p v-if="error" class="text-red-500 text-sm mt-4 text-center">{{ error }}</p>
+  </main>
+</template>
+
+<style scoped>
+form {
+  display: flex;
+  flex-direction: column;
+}
+input {
+  font-size: 16px;
+}
+input[type='text'],
+input[type='email'] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+h1 {
+  text-align: center;
+}
+img {
+  width: 70%;
+  display: block;
+  margin: 0 auto;
+}
+</style>

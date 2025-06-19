@@ -1,157 +1,3 @@
-<template>
-  <main>
-    <div @click="goBack" class="button-back">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="1.5"
-        class="w-6 h-6"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-      </svg>
-    </div>
-
-    <div class="nav-buttons">
-      <RouterLink
-        :to="{ name: 'VotingPage', params: { countryId: prevCountryId } }"
-        v-if="prevCountryId"
-      >
-        <button class="previous">← Previous</button>
-      </RouterLink>
-      <div v-else style="visibility: hidden">
-        <button class="previous">← Previous</button>
-      </div>
-
-      <RouterLink
-        :to="{ name: 'VotingPage', params: { countryId: nextCountryId } }"
-        v-if="nextCountryId"
-      >
-        <button class="next">Next →</button>
-      </RouterLink>
-      <div v-else style="visibility: hidden">
-        <button class="next">Next →</button>
-      </div>
-    </div>
-
-    <div class="country-voting">
-      <div class="title">
-        <img :src="getFlagUrl(country.flag)" :alt="country.name + ' flag'" class="flag" />
-        <div class="country">
-          <h2 class="country-name">{{ country.name }}</h2>
-          <div class="artist">{{ country.artist_name }}</div>
-          <div class="song-name">{{ country.song_name }}</div>
-        </div>
-      </div>
-
-      <div class="voting-section">
-        <div class="section-icon">
-          <img src="../assets/music.png" />
-          <label>Song: {{ myVote.song }}</label>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="10"
-          step="1"
-          v-model.number="myVote.song"
-          @change="submitVote"
-          class="custom-slider"
-        />
-
-        <div class="section-icon">
-          <img src="../assets/dress.png" />
-          <label>Performace: {{ myVote.performance }}</label>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="10"
-          step="1"
-          v-model.number="myVote.performance"
-          @change="submitVote"
-          class="custom-slider"
-        />
-
-        <div class="section-icon">
-          <img src="../assets/microphone.png" />
-          <label>Vocals: {{ myVote.vocals }}</label>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="10"
-          step="1"
-          v-model.number="myVote.vocals"
-          @change="submitVote"
-          class="custom-slider"
-        />
-
-        <div class="section-icon">
-          <img src="../assets/music.png" />
-          <label>Total score: {{ myVote.total_score }}</label>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="10"
-          step="1"
-          v-model.number="myVote.total_score"
-          @change="submitVote"
-          class="custom-slider"
-        />
-      </div>
-
-      <div class="notes-section">
-        <label>Notes:</label>
-        <textarea
-          v-model="myNote.content"
-          @blur="submitNote"
-          placeholder="Write your notes..."
-        ></textarea>
-      </div>
-
-      <div class="live-votes">
-        <h3>Group Votes</h3>
-        <div class="group-votes">
-          <div v-for="vote in groupVotes" :key="vote.user_id" class="group-vote">
-            <div class="image">
-              <img
-                :src="userAvatars[vote.user_id] || defaultAvatar"
-                alt="Profile Picture"
-                class="profile"
-              />
-              <strong>{{ getUserName(vote.user_id) }}:</strong>
-            </div>
-
-            <div class="scores">
-              <div class="element">
-                <img src="../assets/music.png" />
-                <label>Song: {{ vote.song }}</label>
-              </div>
-
-              <div class="element">
-                <img src="../assets/dress.png" />
-                <label>Performance: {{ vote.performance }}</label>
-              </div>
-
-              <div class="element">
-                <img src="../assets/microphone.png" />
-                <label>Vocals: {{ vote.vocals }}</label>
-              </div>
-
-              <div class="element">
-                <img src="../assets/music.png" />
-                <label>Total score: {{ vote.total_score }}</label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-</template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -322,7 +168,6 @@ async function submitVote() {
     group_id: groupId.value,
     country_id: countryId.value,
     is_final: isFinalVote,
-    // ...myVote.value,
     song,
     performance,
     vocals,
@@ -344,6 +189,7 @@ async function submitNote() {
 async function loadUserNames() {
   if (!groupId.value) return
 
+  // get users of same group from supabase
   const { data: users } = await supabase
     .from('users')
     .select('id, name, avatar_url')
@@ -371,7 +217,7 @@ function getUserName(userId) {
   return userNames.value[userId] || 'Unknown User'
 }
 
-// Watch for route change (i.e. when clicking next/previous)
+// Watch for route change ( when clicking next/previous)
 watch(
   () => route.params.countryId,
   async (newId, oldId) => {
@@ -386,20 +232,7 @@ watch(
   },
 )
 
-// Watch for phase change in the same country
-watch(
-  () => route.params.phase,
-  async (newPhase, oldPhase) => {
-    if (newPhase !== oldPhase) {
-      myVote.value = { song: 0, performance: 0, vocals: 0 }
-      myNote.value = { content: '' }
-      groupVotes.value = []
-      currentPhase.value = newPhase || 'semi1'
-      await loadInitialData()
-    }
-  },
-)
-
+// when opening page, load inital data and have live votes channel
 onMounted(() => {
   loadInitialData()
 
@@ -423,6 +256,161 @@ onMounted(() => {
     .subscribe()
 })
 </script>
+
+<template>
+  <main>
+    <div @click="goBack" class="button-back">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="1.5"
+        class="w-6 h-6"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    </div>
+
+    <div class="nav-buttons">
+      <RouterLink
+        :to="{ name: 'VotingPage', params: { countryId: prevCountryId } }"
+        v-if="prevCountryId"
+      >
+        <button class="previous">← Previous</button>
+      </RouterLink>
+      <div v-else style="visibility: hidden">
+        <button class="previous">← Previous</button>
+      </div>
+
+      <RouterLink
+        :to="{ name: 'VotingPage', params: { countryId: nextCountryId } }"
+        v-if="nextCountryId"
+      >
+        <button class="next">Next →</button>
+      </RouterLink>
+      <div v-else style="visibility: hidden">
+        <button class="next">Next →</button>
+      </div>
+    </div>
+
+    <div class="country-voting">
+      <div class="title">
+        <img :src="getFlagUrl(country.flag)" :alt="country.name + ' flag'" class="flag" />
+        <div class="country">
+          <h2 class="country-name">{{ country.name }}</h2>
+          <div class="artist">{{ country.artist_name }}</div>
+          <div class="song-name">{{ country.song_name }}</div>
+        </div>
+      </div>
+
+      <div class="voting-section">
+        <div class="section-icon">
+          <img src="../assets/music.png" />
+          <label>Song: {{ myVote.song }}</label>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="1"
+          v-model.number="myVote.song"
+          @change="submitVote"
+          class="custom-slider"
+        />
+
+        <div class="section-icon">
+          <img src="../assets/dress.png" />
+          <label>Performace: {{ myVote.performance }}</label>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="1"
+          v-model.number="myVote.performance"
+          @change="submitVote"
+          class="custom-slider"
+        />
+
+        <div class="section-icon">
+          <img src="../assets/microphone.png" />
+          <label>Vocals: {{ myVote.vocals }}</label>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="1"
+          v-model.number="myVote.vocals"
+          @change="submitVote"
+          class="custom-slider"
+        />
+
+        <div class="section-icon">
+          <img src="../assets/music.png" />
+          <label>Total score: {{ myVote.total_score }}</label>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="1"
+          v-model.number="myVote.total_score"
+          @change="submitVote"
+          class="custom-slider"
+        />
+      </div>
+
+      <div class="notes-section">
+        <label>Notes:</label>
+        <textarea
+          v-model="myNote.content"
+          @blur="submitNote"
+          placeholder="Write your notes..."
+        ></textarea>
+      </div>
+
+      <div class="live-votes">
+        <h3>Group Votes</h3>
+        <div class="group-votes">
+          <div v-for="vote in groupVotes" :key="vote.user_id" class="group-vote">
+            <div class="image">
+              <img
+                :src="userAvatars[vote.user_id] || defaultAvatar"
+                alt="Profile Picture"
+                class="profile"
+              />
+              <strong>{{ getUserName(vote.user_id) }}:</strong>
+            </div>
+
+            <div class="scores">
+              <div class="element">
+                <img src="../assets/music.png" />
+                <label>Song: {{ vote.song }}</label>
+              </div>
+
+              <div class="element">
+                <img src="../assets/dress.png" />
+                <label>Performance: {{ vote.performance }}</label>
+              </div>
+
+              <div class="element">
+                <img src="../assets/microphone.png" />
+                <label>Vocals: {{ vote.vocals }}</label>
+              </div>
+
+              <div class="element">
+                <img src="../assets/music.png" />
+                <label>Total score: {{ vote.total_score }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
 
 <style scoped>
 img {

@@ -436,3 +436,58 @@ using (
   user_id = auth.uid()
 );
 
+
+-- create the buckets for images
+
+select storage.create_bucket('avatars', public := true);
+
+
+select storage.create_bucket('chat-images', public := true);
+
+
+-- create policies for avatars 
+
+create policy "Authenticated users can read avatars from users in their group"
+on storage.objects
+for select
+using (
+  bucket_id = 'avatars'
+  AND auth.role() = 'authenticated'
+  AND EXISTS (
+    select 1 from users
+    where users.id = split_part(name, '/', 1)::uuid
+    and users.group_id = get_user_group_id()
+  )
+);
+
+
+create policy "Users can upload to their own avatar folder"
+on storage.objects
+for insert
+using (
+  bucket_id = 'avatars'
+  AND auth.role() = 'authenticated'
+  AND split_part(name, '/', 1) = auth.uid()
+);
+
+
+-- create policies for chat images
+
+create policy "Users can upload to their own chat-images folder"
+on storage.objects
+for insert
+using (
+  bucket_id = 'chat-images'
+  AND auth.role() = 'authenticated'
+  AND split_part(name, '/', 1) = auth.uid()
+);
+
+
+create policy "Authenticated users can read chat-images from their group"
+on storage.objects
+for select
+using (
+  bucket_id = 'chat-images'
+  AND auth.role() = 'authenticated'
+  AND split_part(name, '/', 1)::uuid = get_user_group_id()
+);

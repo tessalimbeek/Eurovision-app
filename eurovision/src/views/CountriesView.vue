@@ -26,7 +26,9 @@ const tabs = [
   { key: 'final', label: 'Final' },
 ]
 
+// reactive data, so automatically updates
 const filteredCountries = computed(() => {
+  // filter countries based on phase
   return countries.value
     .filter((country) => {
       switch (activeTab.value) {
@@ -51,6 +53,7 @@ const filteredCountries = computed(() => {
 async function fetchCountries() {
   let query = supabase.from('countries').select('*')
 
+  // get the logged in user
   const { data: authData } = await supabase.auth.getUser()
   if (!authData?.user) return
   user.value = authData.user
@@ -64,18 +67,8 @@ async function fetchCountries() {
 
   if (profile) groupId.value = profile.group_id
 
-  // Filter based on the active tab
-  switch (activeTab.value) {
-    case 'semi1':
-      query = query.eq('semi_final', 1).order('semi_running_order')
-      break
-    case 'semi2':
-      query = query.eq('semi_final', 2).order('semi_running_order')
-      break
-    case 'final':
-      query = query.eq('final', true).order('final_running_order')
-      break
-  }
+  // fetch the countries
+  query = supabase.from('countries').select('*')
 
   const { data } = await query
   countries.value = data || []
@@ -84,9 +77,9 @@ async function fetchCountries() {
 function switchTab(tab) {
   activeTab.value = tab
   router.push(`/countries/${tab}`)
-  fetchCountries()
 }
 
+// when opening this page, fetch the countries
 onMounted(() => {
   fetchCountries()
 })

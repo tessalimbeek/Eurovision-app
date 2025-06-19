@@ -1,49 +1,3 @@
-<template>
-  <main>
-    <div class="max-w-md mx-auto p-4">
-      <h1 class="text-2xl font-bold mb-6">Your Profile</h1>
-
-      <div class="top">
-        <div class="profile-picture">
-          <input
-            type="file"
-            accept="image/*"
-            ref="fileInput"
-            @change="uploadAvatar"
-            style="display: none"
-          />
-          <img :src="avatarUrl || defaultAvatar" alt="Profile Picture" class="profile" />
-          <button @click="triggerFileSelect" class="change">Change</button>
-        </div>
-
-        <h1>{{ name }}</h1>
-      </div>
-
-      <p v-if="uploading" class="text-sm text-blue-500">Uploading...</p>
-      <p v-if="uploadError" class="text-sm text-red-500">{{ uploadError }}</p>
-
-      <form @submit.prevent="updateProfile" class="mb-8">
-        <label for="name">Name</label>
-        <input id="name" v-model="draftName" type="text" required />
-        <button type="submit" :disabled="updating">
-          {{ updating ? 'Saving...' : 'Save Changes' }}
-        </button>
-        <p v-if="updateError" class="text-red-500 mt-2">{{ updateError }}</p>
-        <p v-if="updateSuccess" class="text-green-500 mt-2">Profile updated successfully!</p>
-      </form>
-
-      <h2 class="text-xl font-semibold mb-4">Group Members</h2>
-      <ul v-if="groupMembers.length > 0">
-        <li v-for="member in groupMembers" :key="member.id" class="group-member">
-          <img :src="member.avatar_url || defaultAvatar" alt="Member avatar" class="avatar" />
-          <div class="member-name">{{ member.name }}</div>
-        </li>
-      </ul>
-      <p v-else class="text-gray-500">You're not in any group yet.</p>
-    </div>
-  </main>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { supabase } from '../supabase'
@@ -59,6 +13,7 @@ const updateError = ref(null)
 const updateSuccess = ref(false)
 const groupMembers = ref([])
 const fileInput = ref(null)
+const groupId = ref(null)
 
 const triggerFileSelect = () => {
   fileInput.value?.click()
@@ -126,6 +81,10 @@ const uploadAvatar = async (e) => {
     // Generate a signed URL for displaying the image
     const signedUrl = await generateSignedUrl(filePath)
     avatarUrl.value = signedUrl || defaultAvatar
+    // update the avatar of group members
+    if (groupId.value) {
+      await fetchGroupMembers(groupId.value)
+    }
   } catch (error) {
     console.error('Upload error:', error)
     uploadError.value = 'An error occurred during upload.'
@@ -223,7 +182,7 @@ const fetchProfile = async () => {
       .single()
 
     if (profileError) {
-        console.log("we found an error")
+      console.log('we found an error')
       console.error('Error fetching profile:', profileError)
       return
     }
@@ -240,18 +199,65 @@ const fetchProfile = async () => {
       avatarUrl.value = defaultAvatar
     }
 
-    // Fetch group members separately to avoid infinite recursion
+    // Fetch group members
+    groupId.value = profile.group_id
     await fetchGroupMembers(profile.group_id)
   } catch (error) {
     console.error('Error in fetchProfile:', error)
   }
 }
 
-// Only call fetchProfile once when component mounts
+// when opening page, fetch profile
 onMounted(() => {
   fetchProfile()
 })
 </script>
+
+<template>
+  <main>
+    <div class="max-w-md mx-auto p-4">
+      <h1 class="text-2xl font-bold mb-6">Your Profile</h1>
+
+      <div class="top">
+        <div class="profile-picture">
+          <input
+            type="file"
+            accept="image/*"
+            ref="fileInput"
+            @change="uploadAvatar"
+            style="display: none"
+          />
+          <img :src="avatarUrl || defaultAvatar" alt="Profile Picture" class="profile" />
+          <button @click="triggerFileSelect" class="change">Change</button>
+        </div>
+
+        <h1>{{ name }}</h1>
+      </div>
+
+      <p v-if="uploading" class="text-sm text-blue-500">Uploading...</p>
+      <p v-if="uploadError" class="text-sm text-red-500">{{ uploadError }}</p>
+
+      <form @submit.prevent="updateProfile" class="mb-8">
+        <label for="name">Name</label>
+        <input id="name" v-model="draftName" type="text" required />
+        <button type="submit" :disabled="updating">
+          {{ updating ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <p v-if="updateError" class="text-red-500 mt-2">{{ updateError }}</p>
+        <p v-if="updateSuccess" class="text-green-500 mt-2">Profile updated successfully!</p>
+      </form>
+
+      <h2 class="text-xl font-semibold mb-4">Group Members</h2>
+      <ul v-if="groupMembers.length > 0">
+        <li v-for="member in groupMembers" :key="member.id" class="group-member">
+          <img :src="member.avatar_url || defaultAvatar" alt="Member avatar" class="avatar" />
+          <div class="member-name">{{ member.name }}</div>
+        </li>
+      </ul>
+      <p v-else class="text-gray-500">You're not in any group yet.</p>
+    </div>
+  </main>
+</template>
 
 <style scoped>
 button.change {

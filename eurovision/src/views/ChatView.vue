@@ -9,10 +9,10 @@ const newMessage = ref('')
 const userMap = ref({})
 const fileInputRef = ref(null)
 let chatSubscription = null
-
 const defaultAvatar = '/default-avatar.png'
 const inputRef = ref(null)
 
+// on scroll, the keyboard dissapears
 function dismissKeyboardOnScroll() {
   const chatBoard = document.querySelector('.chat__conversation-board')
   if (!chatBoard) return
@@ -43,7 +43,6 @@ async function handleFileUpload(event) {
   const file = event.target.files[0]
   if (!file || !user.value) return
 
-  //   const fileName = `${user.value.id}/${Date.now()}-${file.name}`
   const fileName = `${userGroupId}/${user.value.id}-${Date.now()}-${file.name}`
 
   // Upload image to Supabase
@@ -118,12 +117,14 @@ async function fetchAndCacheAvatar(userId, signedUrl) {
 }
 
 async function fetchInitialData() {
+  // get auth user
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser()
   if (!authUser) return
   user.value = authUser
 
+  // get group id
   const { data: userGroupId, error: groupError } = await supabase.rpc('get_user_group_id', {
     user_id: user.value.id,
   })
@@ -133,6 +134,7 @@ async function fetchInitialData() {
     return
   }
 
+  // get the messages
   const { data: initialMessages } = await supabase
     .from('messages')
     .select('*')
@@ -173,6 +175,7 @@ async function fetchInitialData() {
     ),
   )
 
+  // create chat supscription
   chatSubscription = supabase
     .channel('chat-live-updates')
     .on(
@@ -258,12 +261,14 @@ async function sendMessage() {
   }
 }
 
+// when opening the page, fetch initial data and add listerner
 onMounted(() => {
   unreadCount.value = 0
   fetchInitialData()
   dismissKeyboardOnScroll()
 })
 
+// when leaving the page, end subscription and remove listerner
 onUnmounted(() => {
   if (chatSubscription) {
     supabase.removeChannel(chatSubscription)

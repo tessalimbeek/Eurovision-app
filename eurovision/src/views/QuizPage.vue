@@ -1,3 +1,56 @@
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import quizzes from '../assets/quizzes.json'
+
+const router = useRouter()
+const route = useRoute()
+const selectedQuiz = ref(null)
+const currentQuestionIndex = ref(0)
+const score = ref(0)
+
+// reactive varaible, automatically updates
+const currentQuestion = computed(() => {
+  return selectedQuiz.value?.questions[currentQuestionIndex.value] ?? {}
+})
+
+function selectAnswer(index) {
+  if (index === currentQuestion.value.correctIndex) {
+    score.value++
+  }
+
+  const nextIndex = currentQuestionIndex.value + 1
+
+  if (nextIndex >= selectedQuiz.value.questions.length) {
+    finishQuiz()
+  }
+
+  currentQuestionIndex.value = nextIndex
+}
+
+function finishQuiz() {
+  if (selectedQuiz.value) {
+    localStorage.setItem(`quiz-score-${selectedQuiz.value.id}`, score.value.toString())
+  }
+}
+
+function restartQuiz() {
+  currentQuestionIndex.value = 0
+  score.value = 0
+}
+
+function goBack() {
+  router.back()
+}
+
+// when opening the page, find correct quiz from id in route
+onMounted(() => {
+  const quizId = route.params.quizId
+  selectedQuiz.value = quizzes.find((q) => q.id === quizId)
+})
+</script>
+
 <template>
   <main>
     <div @click="goBack" class="button-back">
@@ -54,55 +107,6 @@
   </main>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import quizzes from '../assets/quizzes.json'
-
-const router = useRouter()
-const route = useRoute()
-
-const selectedQuiz = ref(null)
-const currentQuestionIndex = ref(0)
-const score = ref(0)
-
-const currentQuestion = computed(() => {
-  return selectedQuiz.value?.questions[currentQuestionIndex.value] ?? {}
-})
-
-function selectAnswer(index) {
-  if (index === currentQuestion.value.correctIndex) {
-    score.value++
-  }
-
-  const nextIndex = currentQuestionIndex.value + 1
-
-  if (nextIndex >= selectedQuiz.value.questions.length) {
-    finishQuiz()
-  }
-
-  currentQuestionIndex.value = nextIndex
-}
-
-function finishQuiz() {
-  if (selectedQuiz.value) {
-    localStorage.setItem(`quiz-score-${selectedQuiz.value.id}`, score.value.toString())
-  }
-}
-function restartQuiz() {
-  currentQuestionIndex.value = 0
-  score.value = 0
-}
-
-function goBack() {
-  router.back()
-}
-
-onMounted(() => {
- const quizId = route.params.quizId
-  selectedQuiz.value = quizzes.find((q) => q.id === quizId)
-})
-</script>
 
 <style scoped>
 ul li {

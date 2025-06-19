@@ -1,3 +1,34 @@
+<script setup>
+import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import quizzesData from '@/assets/quizzes.json'
+
+const router = useRouter()
+const quizzes = ref([])
+
+// when opening page, load quizzed
+onMounted(() => {
+  quizzes.value = quizzesData.map(q => ({ ...q, score: null }))
+
+  // Load saved scores
+  quizzes.value.forEach((quiz) => {
+    const savedScore = localStorage.getItem(`quiz-score-${quiz.id}`)
+    if (savedScore !== null) {
+      quiz.score = parseInt(savedScore)
+    }
+  })
+})
+
+function startQuiz(id) {
+  router.push(`/quiz/${id}`)
+}
+
+function goBack() {
+  router.back()
+}
+</script>
+
+
 <template>
   <main>
     <div @click="goBack" class="button-back">
@@ -30,37 +61,6 @@
     </div>
   </main>
 </template>
-
-<script setup>
-import { useRouter } from 'vue-router'
-import { ref, onMounted } from 'vue'
-import quizzesData from '@/assets/quizzes.json'
-
-const router = useRouter()
-const quizzes = ref([])
-
-onMounted(() => {
-  quizzes.value = quizzesData.map(q => ({ ...q, score: null }))
-
-  // Load saved scores
-  quizzes.value.forEach((quiz) => {
-    const savedScore = localStorage.getItem(`quiz-score-${quiz.id}`)
-    if (savedScore !== null) {
-      quiz.score = parseInt(savedScore)
-    }
-  })
-})
-
-function startQuiz(id) {
-  router.push(`/quiz/${id}`)
-}
-
-function goBack() {
-  router.back()
-}
-</script>
-
-
 
 <style scoped>
 .quiz-list {

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// Set your target date/time here
+// Set your countdown date/time
 const targetDate = new Date('2026-05-10T21:00:00').getTime()
 
 const timeLeft = ref({
@@ -32,11 +32,13 @@ function updateCountdown() {
   }
 }
 
+// on opening of the page, set interval and countdown
 onMounted(() => {
   updateCountdown()
   interval = setInterval(updateCountdown, 1000)
 })
 
+// on leaving the page, clear interval
 onUnmounted(() => {
   if (interval) {
     clearInterval(interval)
