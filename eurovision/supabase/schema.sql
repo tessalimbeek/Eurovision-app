@@ -1,3 +1,5 @@
+hello
+
 create table public.groups (
   id uuid not null default extensions.uuid_generate_v4 (),
   name text not null,
