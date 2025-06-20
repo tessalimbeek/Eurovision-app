@@ -92,8 +92,17 @@ values
   ('example@example.com'),
   ('example@example.com');
 ```
+
+### 7. Add a group
+
+Open the SQL Editor and paste this and run the contents
+
+```bash
+INSERT INTO groups (name, invite_code)
+VALUES ('My Group', 'example_invite_code');
+```
     
-### 7. Configure Environment Variables
+### 8. Configure Environment Variables
 
 Create a file called .env in the root directory:
 
@@ -107,7 +116,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 You can also copy .env.example and rename it to .env.
 
 
-### 8. Start the App
+### 9. Start the App
 
 ```bash
 npm run dev
