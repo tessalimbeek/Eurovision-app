@@ -103,6 +103,13 @@ values
   ('example@example.com');
 ```
 
+### 6. Add the countries
+
+Open the SQL Editor
+and paste and run the contents of supabase/countries.sql
+
+This is an example file of the countries of 2025
+
 ### 7. Add a group
 
 Open the SQL Editor and paste this and run the contents
