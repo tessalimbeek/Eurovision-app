@@ -74,7 +74,7 @@ In the Supabase dashboard:
 Open Storage
 Create 2 storage buckets, one called "avatars" and one called "chat-images"
 
-### 4. Create Tables, Policies, and Functions
+### 5. Create Tables, Policies, and Functions
 
 In the Supabase dashboard:
 
@@ -82,7 +82,7 @@ Open the SQL Editor
 Paste and run the contents of supabase/schema.sql
 (This file defines all tables, RLS policies, and functions)
 
-### 5. Enable realtime for votes and messages and turn off confirmation email
+### 6. Enable realtime for votes and messages and turn off confirmation email
 
 In the Supabase dashboard:
 
@@ -91,7 +91,7 @@ Open Table Editor and turn on Realtime for votes and messages
 Go to Project settings > Authentication > General email signup > email
 Toggle off "Confirm email"
 
-### 6. Add the whitelist emails
+### 7. Add the whitelist emails
 
 Open the SQL Editor
 and paste this and run the contents
@@ -103,14 +103,14 @@ values
   ('example@example.com');
 ```
 
-### 6. Add the countries
+### 8. Add the countries
 
 Open the SQL Editor
 and paste and run the contents of supabase/countries.sql
 
 This is an example file of the countries of 2025
 
-### 7. Add a group
+### 9. Add a group
 
 Open the SQL Editor and paste this and run the contents
 
@@ -119,7 +119,7 @@ INSERT INTO groups (name, invite_code)
 VALUES ('My Group', 'example_invite_code');
 ```
     
-### 8. Configure Environment Variables
+### 10. Configure Environment Variables
 
 Create a file called .env in the root directory:
 
@@ -130,7 +130,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 🔐 Do not share your .env file. Add it to .gitignore.
 
-### 9. Start the App
+### 11. Start the App
 
 ```bash
 npm run dev
