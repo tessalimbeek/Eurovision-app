@@ -19,6 +19,15 @@ const triggerFileSelect = () => {
   fileInput.value?.click()
 }
 
+const logout = async () => {
+  const { error } = await supabase.auth.signOut()
+  if (error) {
+    console.error('Logout error:', error.message)
+  } else {
+    window.location.href = '/'
+  }
+}
+
 const generateSignedUrl = async (filePath) => {
   if (!filePath) return null
 
@@ -215,8 +224,8 @@ onMounted(() => {
 
 <template>
   <main>
-    <div class="max-w-md mx-auto p-4">
-      <h1 class="text-2xl font-bold mb-6">Your Profile</h1>
+    <div>
+      <h1>Your Profile</h1>
 
       <div class="top">
         <div class="profile-picture">
@@ -234,32 +243,46 @@ onMounted(() => {
         <h1>{{ name }}</h1>
       </div>
 
-      <p v-if="uploading" class="text-sm text-blue-500">Uploading...</p>
-      <p v-if="uploadError" class="text-sm text-red-500">{{ uploadError }}</p>
+      <p v-if="uploading">Uploading...</p>
+      <p v-if="uploadError">{{ uploadError }}</p>
 
-      <form @submit.prevent="updateProfile" class="mb-8">
+      <form @submit.prevent="updateProfile">
         <label for="name">Name</label>
         <input id="name" v-model="draftName" type="text" required />
         <button type="submit" :disabled="updating">
           {{ updating ? 'Saving...' : 'Save Changes' }}
         </button>
-        <p v-if="updateError" class="text-red-500 mt-2">{{ updateError }}</p>
-        <p v-if="updateSuccess" class="text-green-500 mt-2">Profile updated successfully!</p>
+        <p v-if="updateError">{{ updateError }}</p>
+        <p v-if="updateSuccess">Profile updated successfully!</p>
       </form>
 
-      <h2 class="text-xl font-semibold mb-4">Group Members</h2>
+      <h2>Group Members</h2>
       <ul v-if="groupMembers.length > 0">
         <li v-for="member in groupMembers" :key="member.id" class="group-member">
           <img :src="member.avatar_url || defaultAvatar" alt="Member avatar" class="avatar" />
           <div class="member-name">{{ member.name }}</div>
         </li>
       </ul>
-      <p v-else class="text-gray-500">You're not in any group yet.</p>
+      <p v-else>You're not in any group yet.</p>
+    </div>
+    <div>
+      <button @click="logout" class="logout-btn">Log Out</button>
     </div>
   </main>
 </template>
 
 <style scoped>
+
+button.logout-btn {
+  all: unset;
+  cursor: pointer;
+  color: red;
+  font-size: small;
+  padding: 10px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
 button.change {
   all: unset;
   cursor: pointer;
