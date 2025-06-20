@@ -49,7 +49,7 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/tessalimbeek/eurovision-app.git
+git clone https://github.com/tessalimbeek/Eurovision-app.git
 cd eurovision-app
 cd eurovision
 ```
