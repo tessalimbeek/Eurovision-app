@@ -50,7 +50,7 @@ Built with **Vue 3** and **Supabase** (PostgreSQL, Auth, Storage, RLS).
 
 ```bash
 git clone https://github.com/tessalimbeek/Eurovision-app.git
-cd eurovision-app
+cd Eurovision-app
 cd eurovision
 ```
 
@@ -67,6 +67,13 @@ npm install
    - anon/public API key
 These will be used in your local environment.
 
+### 4. Create 2 storage buckets
+
+In the Supabase dashboard:
+
+Open Storage
+Create 2 storage buckets, one called "avatars" and one called "chat-images"
+
 ### 4. Create Tables, Policies, and Functions
 
 In the Supabase dashboard:
@@ -75,11 +82,14 @@ Open the SQL Editor
 Paste and run the contents of supabase/schema.sql
 (This file defines all tables, RLS policies, and functions)
 
-### 5. Enable realtime for votes and messages
+### 5. Enable realtime for votes and messages and turn off confirmation email
 
 In the Supabase dashboard:
 
-Open Table Editor and turn on Realtime
+Open Table Editor and turn on Realtime for votes and messages
+
+Go to Project settings > Authentication > General email signup > email
+Toggle off "Confirm email"
 
 ### 6. Add the whitelist emails
 
@@ -112,9 +122,6 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 🔐 Do not share your .env file. Add it to .gitignore.
-
-You can also copy .env.example and rename it to .env.
-
 
 ### 9. Start the App
 
