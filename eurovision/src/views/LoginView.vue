@@ -109,7 +109,7 @@ const handleLogin = async () => {
       />
       <button type="submit">Join Room</button>
     </form>
-    <p v-if="error" class="text-red-500 text-sm mt-4 text-center">{{ error }}</p>
+    <p v-if="error">{{ error }}</p>
   </main>
 </template>
 

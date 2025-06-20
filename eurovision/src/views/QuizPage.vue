@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -66,47 +65,34 @@ onMounted(() => {
       </svg>
     </div>
 
-    <div class="quiz-container p-4 bg-white rounded-2xl shadow max-w-xl mx-auto">
-      <h2 class="text-xl font-bold mb-4 text-center">
-        {{ selectedQuiz?.emoji }} {{ selectedQuiz?.title }}
-      </h2>
+    <div class="quiz-container">
+      <h2>{{ selectedQuiz?.emoji }} {{ selectedQuiz?.title }}</h2>
 
       <div v-if="!selectedQuiz">
-        <p class="text-center text-red-500">Quiz not found.</p>
+        <p>Quiz not found.</p>
       </div>
 
       <div v-else-if="currentQuestionIndex < selectedQuiz.questions.length">
-        <p class="mb-2 font-semibold">
-          {{ currentQuestionIndex + 1 }}. {{ currentQuestion.question }}
-        </p>
-        <ul class="space-y-2">
+        <p>{{ currentQuestionIndex + 1 }}. {{ currentQuestion.question }}</p>
+        <ul>
           <li v-for="(answer, index) in currentQuestion.answers" :key="index">
-            <button
-              class="w-full bg-gray-100 hover:bg-blue-100 rounded px-4 py-2 text-left"
-              @click="selectAnswer(index)"
-            >
+            <button @click="selectAnswer(index)">
               {{ answer }}
             </button>
           </li>
         </ul>
       </div>
 
-      <div v-else class="text-center">
-        <h3 class="text-lg font-semibold mb-2">🎉 Quiz Completed!</h3>
+      <div v-else>
+        <h3>🎉 Quiz Completed!</h3>
         <p>
           You got <strong>{{ score }}</strong> out of {{ selectedQuiz.questions.length }} correct.
         </p>
-        <button
-          @click="restartQuiz"
-          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Restart Quiz
-        </button>
+        <button @click="restartQuiz">Restart Quiz</button>
       </div>
     </div>
   </main>
 </template>
-
 
 <style scoped>
 ul li {

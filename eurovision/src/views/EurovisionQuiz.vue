@@ -8,7 +8,7 @@ const quizzes = ref([])
 
 // when opening page, load quizzed
 onMounted(() => {
-  quizzes.value = quizzesData.map(q => ({ ...q, score: null }))
+  quizzes.value = quizzesData.map((q) => ({ ...q, score: null }))
 
   // Load saved scores
   quizzes.value.forEach((quiz) => {
@@ -28,7 +28,6 @@ function goBack() {
 }
 </script>
 
-
 <template>
   <main>
     <div @click="goBack" class="button-back">
@@ -44,7 +43,7 @@ function goBack() {
       </svg>
     </div>
 
-    <h2 class="text-xl font-bold mb-4">Choose a Eurovision Quiz</h2>
+    <h2>Choose a Eurovision Quiz</h2>
 
     <div class="quiz-list">
       <div class="quiz-item" v-for="quiz in quizzes" :key="quiz.id">

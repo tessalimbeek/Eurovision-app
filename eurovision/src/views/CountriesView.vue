@@ -112,13 +112,10 @@ onMounted(() => {
     </div>
 
     <!-- Personal Top 5 Button -->
-    <div class="fixed-bottom-button">
-      <button
-        @click="showPersonalTop5 = true"
-        class="top-5-button bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-2"
-      >
-        <span class="text-xl">🏆</span>
-        <span class="font-semibold">Show My Top 5</span>
+    <div>
+      <button @click="showPersonalTop5 = true" class="top-5-button">
+        <span>🏆</span>
+        <span>Show My Top 5</span>
       </button>
     </div>
 

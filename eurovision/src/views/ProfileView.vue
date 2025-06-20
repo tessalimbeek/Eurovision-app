@@ -272,7 +272,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
 button.logout-btn {
   all: unset;
   cursor: pointer;
