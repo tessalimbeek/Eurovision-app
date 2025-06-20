@@ -1,3 +1,26 @@
+create table public.groups (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  name text not null,
+  invite_code text not null,
+  constraint groups_pkey primary key (id),
+  constraint groups_invite_code_key unique (invite_code)
+) TABLESPACE pg_default;
+
+create table public.countries (
+  id serial not null,
+  name text not null,
+  code text null,
+  semi_final integer null,
+  final boolean null,
+  flag text null,
+  artist_name text null,
+  song_name text null,
+  semi_running_order integer null,
+  final_running_order integer null,
+  constraint countries_pkey primary key (id)
+) TABLESPACE pg_default;
+
+
 create table public.users (
   id uuid not null default extensions.uuid_generate_v4 (),
   name text not null,
@@ -48,27 +71,7 @@ create table public.messages (
   constraint messages_sender_id_fkey foreign KEY (sender_id) references auth.users (id) on delete set null
 ) TABLESPACE pg_default;
 
-create table public.countries (
-  id serial not null,
-  name text not null,
-  code text null,
-  semi_final integer null,
-  final boolean null,
-  flag text null,
-  artist_name text null,
-  song_name text null,
-  semi_running_order integer null,
-  final_running_order integer null,
-  constraint countries_pkey primary key (id)
-) TABLESPACE pg_default;
 
-create table public.groups (
-  id uuid not null default extensions.uuid_generate_v4 (),
-  name text not null,
-  invite_code text not null,
-  constraint groups_pkey primary key (id),
-  constraint groups_invite_code_key unique (invite_code)
-) TABLESPACE pg_default;
 
 
 
@@ -79,7 +82,7 @@ create table email_whitelist (
 
 alter table users enable row level security;
 alter table countries enable row level security;
-alter table messagess enable row level security;
+alter table messages enable row level security;
 alter table votes enable row level security;
 alter table notes enable row level security;
 alter table groups enable row level security;
@@ -215,11 +218,10 @@ $$;
 
 -- policy for email whitelist
 
--- Allow read access only if the email matches the user's email
-CREATE POLICY "Allow access if email is whitelisted"
+CREATE POLICY "Allow all SELECT"
 ON email_whitelist
 FOR SELECT
-USING true
+USING (true);
 
 -- policies for countries
 
@@ -267,11 +269,11 @@ using (
 
 -- policies messages
 
-alter policy "Users can delete their own messages"
-on public.messages
-for delete
-to authenticated
-using (
+CREATE POLICY "Users can delete their own messages"
+ON public.messages
+FOR DELETE
+TO authenticated
+USING (
   sender_id = auth.uid()
 );
 
@@ -448,12 +450,6 @@ using (
 
 -- create the buckets for images
 
-select storage.create_bucket('avatars', public := true);
-
-
-select storage.create_bucket('chat-images', public := true);
-
-
 -- create policies for avatars 
 
 create policy "Authenticated users can read avatars from users in their group"
@@ -465,7 +461,7 @@ using (
   AND EXISTS (
     select 1 from users
     where users.id = split_part(name, '/', 1)::uuid
-    and users.group_id = get_user_group_id()
+    and users.group_id = get_user_group_id(auth.uid())
   )
 );
 
@@ -473,10 +469,10 @@ using (
 create policy "Users can upload to their own avatar folder"
 on storage.objects
 for insert
-using (
+with check (
   bucket_id = 'avatars'
   AND auth.role() = 'authenticated'
-  AND split_part(name, '/', 1) = auth.uid()
+  AND split_part(name, '/', 1)::uuid = auth.uid()
 );
 
 
@@ -485,10 +481,10 @@ using (
 create policy "Users can upload to their own chat-images folder"
 on storage.objects
 for insert
-using (
+with check (
   bucket_id = 'chat-images'
   AND auth.role() = 'authenticated'
-  AND split_part(name, '/', 1) = auth.uid()
+  AND split_part(name, '/', 1)::uuid = auth.uid()
 );
 
 
@@ -498,5 +494,5 @@ for select
 using (
   bucket_id = 'chat-images'
   AND auth.role() = 'authenticated'
-  AND split_part(name, '/', 1)::uuid = get_user_group_id()
+  AND split_part(name, '/', 1)::uuid = get_user_group_id(auth.uid())
 );
