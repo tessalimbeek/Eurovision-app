@@ -16,16 +16,16 @@ const handleLogin = async () => {
   error.value = null
 
   // check if email is whitelisted
-  const { data: whitelist, error: whiteListError } = await supabase
-    .from('email_whitelist')
-    .select('*')
-    .eq('email', email.value)
-    .single()
+    const { data: whitelist, error: whiteListError } = await supabase
+      .from('email_whitelist')
+      .select('*')
+      .eq('email', email.value)
+      .single()
 
-  if (whiteListError) {
-    error.value = 'Access denied: your email is not authorized.'
-    return
-  }
+    if (whiteListError) {
+      error.value = 'Access denied: your email is not authorized.'
+      return
+    }
 
   const password = email.value // consistent password
 

@@ -114,7 +114,7 @@ onMounted(() => {
     <!-- Personal Top 5 Button -->
     <div>
       <button @click="showPersonalTop5 = true" class="top-5-button">
-        <span>🏆</span>
+        <span> 🏆 </span>
         <span>Show My Top 5</span>
       </button>
     </div>

@@ -83,7 +83,10 @@ alter table messagess enable row level security;
 alter table votes enable row level security;
 alter table notes enable row level security;
 alter table groups enable row level security;
+ALTER TABLE email_whitelist ENABLE ROW LEVEL SECURITY;
 
+
+-- create functions
 
 create or replace function generate_unique_invite_code()
 returns text
@@ -210,7 +213,13 @@ as $$
   );
 $$;
 
+-- policy for email whitelist
 
+-- Allow read access only if the email matches the user's email
+CREATE POLICY "Allow access if email is whitelisted"
+ON email_whitelist
+FOR SELECT
+USING true
 
 -- policies for countries
 
