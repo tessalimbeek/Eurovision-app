@@ -153,7 +153,8 @@ Open your browser to http://localhost:5173
 │   │   ├── App.vue
 │   │   └── main.ts
 │   ├── supabase/
-│   │   └── schema.sql          # Full SQL setup
+│   │   ├── schema.sql         # Full SQL setup
+│   │   └── countries.sql      
 │   ├── .env.example
 │   └── README.md
 ```
